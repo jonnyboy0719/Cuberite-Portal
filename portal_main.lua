@@ -7,8 +7,6 @@ PlayersData = {}
 PortalsData = {}
 
 -- Teleportation fixes
-local IsRightclicking = false
-local HasTeleported = false
 local IsWorld = false
 
 function Initialize(Plugin)
@@ -43,6 +41,9 @@ function OnPlayerMoving(Player)
 	local _name = Player:GetName()
 	if (PlayersData[_name] == nil) then
 		PlayersData[_name] = {}	-- create player's page
+		
+		PlayersData[_name].IsWorld = false
+		PlayersData[_name].HasTeleported = false
 	end
 	if (PlayersData[_name].portal_state == nil) then
 		PlayersData[_name].portal_state = -1
@@ -58,9 +59,11 @@ function OnPlayerMoving(Player)
 			if (os.clock() > PlayersData[_name].portal_timer) then
 				-- Lets teleport the player
 				if (Player:GetWorld():GetName() ~= PortalsData[_zone]["target"]) then
-					IsWorld = true
-					HasTeleported = true
+				
+					PlayersData[_name].IsWorld = true
+					PlayersData[_name].HasTeleported = true
 					PlayersData[_name].zones = _zone
+					
 					Player:MoveToWorld(PortalsData[TargetArea]["world"])
 				else
 					Player:TeleportToCoords(PortalsData[TargetArea]["destination_x"], PortalsData[TargetArea]["destination_y"], PortalsData[TargetArea]["destination_z"])
@@ -98,8 +101,9 @@ function OnEntityChangedWorld(Entity, World)
 
 			Entity:TeleportToCoords(PortalsData[TargetArea]["destination_x"], PortalsData[TargetArea]["destination_y"], PortalsData[TargetArea]["destination_z"])
 			Entity:SendMessage(cChatColor.Yellow .. "You have been teleported!")
-			IsWorld = false
-			HasTeleported = false
+			
+			PlayersData[_name].IsWorld = false
+			PlayersData[_name].HasTeleported = false
 		end
 	end
 	return false
@@ -107,48 +111,45 @@ end
 
 function OnPlayerBreakingBlock(Player, IN_x, IN_y, IN_z, BlockFace, Status, OldBlock, OldMeta)
 	local _name = Player:GetName()
-	if (PlayersData[_name] == nil) then
-		PlayersData[_name] = {}	-- create player's page
-	end
-	if (Player:HasPermission("portal.create") == true) then
-		if (PlayersData[Player:GetName()].create_volume_mode == nil) then
-			PlayersData[Player:GetName()].create_volume_mode = true
+	local playerini = cIniFile()
+	local GetIniFileName = "portals_players.ini"
+	
+	if PortalsData[_name]["hastool"] == 1 then
+		if (PlayersData[_name] == nil) then
+			PlayersData[_name] = {}	-- create player's page
 		end
-	end
-	if not IsRightclicking then
-		if (PlayersData[_name].create_volume_mode ~= nil) then
-			if (PlayersData[_name].create_volume_mode == true) then
-				if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
-					if (PlayersData[_name].point1 == nil) then
-					-- debug
-					--	Player:SendMessage(IN_x);
-						PlayersData[_name].point1 = Vector3i()
-					end
-					PlayersData[_name].point1.x = IN_x
-					PlayersData[_name].point1.y = IN_y
-					PlayersData[_name].point1.z = IN_z
-					Player:SendMessage("First portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
-					Player:SendMessage(cChatColor.LightBlue .. "Now select the second portal entrance volume point.")
-					IsRightclicking = true
-					return true
+		
+		if PlayersData[_name].IsRightclicking == nil then
+			PlayersData[_name].IsRightclicking = false
+		end
+		
+		if not PlayersData[_name].IsRightclicking then
+			if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
+				if (PlayersData[_name].point1 == nil) then
+				-- debug
+				--	Player:SendMessage(IN_x);
+					PlayersData[_name].point1 = Vector3i()
 				end
+				PlayersData[_name].point1.x = IN_x
+				PlayersData[_name].point1.y = IN_y
+				PlayersData[_name].point1.z = IN_z
+				Player:SendMessage("First portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
+				Player:SendMessage(cChatColor.LightBlue .. "Now select the second portal entrance volume point.")
+				PlayersData[_name].IsRightclicking = true
+				return true
 			end
-		end
-	else
-		if (IN_x ~= -1 and IN_y ~= 255 and IN_z ~= -1) then
-			if (PlayersData[_name].create_volume_mode ~= nil) then
-				if (PlayersData[_name].create_volume_mode == true) then
-					if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
-						if (PlayersData[_name].point2 == nil) then
-							PlayersData[_name].point2 = Vector3i()
-						end
-						PlayersData[_name].point2.x = IN_x
-						PlayersData[_name].point2.y = IN_y
-						PlayersData[_name].point2.z = IN_z
-						Player:SendMessage("Second portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
-						IsRightclicking = false
-						return true
+		else
+			if (IN_x ~= -1 and IN_y ~= 255 and IN_z ~= -1) then
+				if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
+					if (PlayersData[_name].point2 == nil) then
+						PlayersData[_name].point2 = Vector3i()
 					end
+					PlayersData[_name].point2.x = IN_x
+					PlayersData[_name].point2.y = IN_y
+					PlayersData[_name].point2.z = IN_z
+					Player:SendMessage("Second portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
+					PlayersData[_name].IsRightclicking = false
+					return true
 				end
 			end
 		end

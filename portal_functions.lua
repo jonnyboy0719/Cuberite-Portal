@@ -21,6 +21,7 @@ function HandleToggleCommand(Split, Player)
 		
 		playerini:WriteFile(GetIniFileName)
 		
+		LoadPlayersData()
 	end
 	return true
 end
