@@ -61,17 +61,55 @@ function HandleMakeWarpCommand(Split, Player)
 				
 				warpini:WriteFile(GetIniFileName)
 				
-				Player:SendMessage('Warp "'..Split[2]..'" created!')
+				Player:SendMessage('Warp "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '" created!')
 				
 				LoadPortalsData()
 			else
-				Player:SendMessage('There already is a warp, named "'..Split[2]..'"')
+				Player:SendMessage('There already is a warp, named "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '"')
 			end
 		else
 			Player:SendMessage("/pwarp <id>")
 		end
 	else
 		Player:SendMessage("You're not allowed to create warps")
+	end
+	return true
+end
+
+function HandleMakeDestinationCommand(Split, Player)
+	if (Player:HasPermission("portal.create") == true) then
+		if (#Split == 2) then
+			local warpini = cIniFile()
+			local GetIniFileName = "portals_portals.ini"
+			
+			warpini:ReadFile(GetIniFileName)
+			
+			local getkeyid = warpini:FindKey( Split[2] )
+			
+			if getkeyid ~= -1 then
+				-----
+				local player_pos_x = Player:GetPosX()
+				local player_pos_y = Player:GetPosY()
+				local player_pos_z = Player:GetPosZ()
+				-----
+				
+				warpini:SetValueI(Split[2], "destination_x", player_pos_x)
+				warpini:SetValueI(Split[2], "destination_y", player_pos_y)
+				warpini:SetValueI(Split[2], "destination_z", player_pos_z)
+				
+				warpini:WriteFile(GetIniFileName)
+				
+				Player:SendMessage('Destination for Portal ID "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '" created!')
+				
+				LoadPortalsData()
+			else
+				Player:SendMessage('The id "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '" doesn\'t exist!')
+			end
+		else
+			Player:SendMessage("/penter <id> <target_id>")
+		end
+	else
+		Player:SendMessage("You're not allowed to create destinations")
 	end
 	return true
 end
@@ -84,7 +122,7 @@ function HandleMakeEnterCommand(Split, Player)
 			
 			warpini:ReadFile(GetIniFileName)
 			
-			if Split[2] ~= Split[3] then
+			if Split[2] ~= "" then
 				local getkeyid = warpini:FindKey( Split[3] )
 				if getkeyid == -1 then
 					Player:SendMessage('The id "' .. cChatColor.LightBlue .. Split[3] .. cChatColor.White .. '" doesn\'t exist!')
@@ -95,11 +133,6 @@ function HandleMakeEnterCommand(Split, Player)
 				local player_pos_y = Player:GetPosY()
 				local player_pos_z = Player:GetPosZ()
 				-----
-				
-				warpini:DeleteValue(Split[2], "target")
-				warpini:DeleteValue(Split[2], "destination_x")
-				warpini:DeleteValue(Split[2], "destination_y")
-				warpini:DeleteValue(Split[2], "destination_z")
 				
 				warpini:SetValue(Split[2], "target", Split[3])
 				warpini:SetValueI(Split[2], "destination_x", player_pos_x)
@@ -115,10 +148,10 @@ function HandleMakeEnterCommand(Split, Player)
 				Player:SendMessage('You can\'t set the target as itself!')
 			end
 		else
-			Player:SendMessage("/penter <id> <target_id>")
+			Player:SendMessage("/pdest <id>")
 		end
 	else
-		Player:SendMessage("You're not allowed to create warps")
+		Player:SendMessage("You're not allowed to connect 2 portal destinations")
 	end
 	return true
 end

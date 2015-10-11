@@ -28,5 +28,12 @@ g_PluginInfo =
 			Handler = HandleMakeEnterCommand,
 			HelpString = "Connects 2 portals together",
 		},
+		
+		["/pdest"] = 
+		{
+			Permission = "portal.create",
+			Handler = HandleMakeDestinationCommand,
+			HelpString = "Create the destination for a portal ID",
+		},
 	},
 }
