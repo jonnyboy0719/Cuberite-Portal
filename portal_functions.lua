@@ -69,7 +69,7 @@ function HandleMakeWarpCommand(Split, Player)
 				Player:SendMessage('There already is a warp, named "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '"')
 			end
 		else
-			Player:SendMessage("/pwarp <id>")
+			Player:SendMessage("Usage: "..Split[1].." <id>")
 		end
 	else
 		Player:SendMessage("You're not allowed to create warps")
@@ -107,7 +107,7 @@ function HandleMakeDestinationCommand(Split, Player)
 				Player:SendMessage('The id "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '" doesn\'t exist!')
 			end
 		else
-			Player:SendMessage("/penter <id> <target_id>")
+			Player:SendMessage("Usage: "..Split[1].." <id> <target_id>")
 		end
 	else
 		Player:SendMessage("You're not allowed to create destinations")
@@ -149,7 +149,7 @@ function HandleMakeEnterCommand(Split, Player)
 				Player:SendMessage('You can\'t set the target as itself!')
 			end
 		else
-			Player:SendMessage("/pdest <id>")
+			Player:SendMessage("Usage: "..Split[1].." <id>")
 		end
 	else
 		Player:SendMessage("You're not allowed to connect 2 portal destinations")
