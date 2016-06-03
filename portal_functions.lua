@@ -41,6 +41,10 @@ function HandleMakeWarpCommand(Split, Player)
 				local _name = Player:GetName()
 				local getworldname = Player:GetWorld():GetName()
 				
+				if PlayersData[_name] == nil then
+					PlayersData[_name] = {}	-- create player's page
+				end
+				
 				if not (PlayersData[_name].point1 == nil or PlayersData[_name].point2 == nil) then
 					local portal_x = PlayersData[_name].point1.x
 					local portal_y = PlayersData[_name].point1.y
