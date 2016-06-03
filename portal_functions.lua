@@ -40,31 +40,36 @@ function HandleMakeWarpCommand(Split, Player)
 				-----
 				local _name = Player:GetName()
 				local getworldname = Player:GetWorld():GetName()
-				local portal_x = PlayersData[_name].point1.x
-				local portal_y = PlayersData[_name].point1.y
-				local portal_z = PlayersData[_name].point1.z
-				local portal_p2_x = PlayersData[_name].point2.x
-				local portal_p2_y = PlayersData[_name].point2.y
-				local portal_p2_z = PlayersData[_name].point2.z
-				-----
 				
-				warpini:SetValue(Split[2], "world", getworldname)
-				warpini:SetValue(Split[2], "target", "")
-				warpini:SetValueI(Split[2], "portal_point1_x", portal_x)
-				warpini:SetValueI(Split[2], "portal_point1_y", portal_y)
-				warpini:SetValueI(Split[2], "portal_point1_z", portal_z)
-				warpini:SetValueI(Split[2], "portal_point2_x", portal_p2_x)
-				warpini:SetValueI(Split[2], "portal_point2_y", portal_p2_y)
-				warpini:SetValueI(Split[2], "portal_point2_z", portal_p2_z)
-				warpini:SetValueI(Split[2], "destination_x", 0)
-				warpini:SetValueI(Split[2], "destination_y", 0)
-				warpini:SetValueI(Split[2], "destination_z", 0)
-				
-				warpini:WriteFile(GetIniFileName)
-				
-				Player:SendMessage('Warp "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '" created!')
-				
-				LoadPortalsData()
+				if not (PlayersData[_name].point1 == nil or PlayersData[_name].point2 == nil) then
+					local portal_x = PlayersData[_name].point1.x
+					local portal_y = PlayersData[_name].point1.y
+					local portal_z = PlayersData[_name].point1.z
+					local portal_p2_x = PlayersData[_name].point2.x
+					local portal_p2_y = PlayersData[_name].point2.y
+					local portal_p2_z = PlayersData[_name].point2.z
+					-----
+					
+					warpini:SetValue(Split[2], "world", getworldname)
+					warpini:SetValue(Split[2], "target", "")
+					warpini:SetValueI(Split[2], "portal_point1_x", portal_x)
+					warpini:SetValueI(Split[2], "portal_point1_y", portal_y)
+					warpini:SetValueI(Split[2], "portal_point1_z", portal_z)
+					warpini:SetValueI(Split[2], "portal_point2_x", portal_p2_x)
+					warpini:SetValueI(Split[2], "portal_point2_y", portal_p2_y)
+					warpini:SetValueI(Split[2], "portal_point2_z", portal_p2_z)
+					warpini:SetValueI(Split[2], "destination_x", 0)
+					warpini:SetValueI(Split[2], "destination_y", 0)
+					warpini:SetValueI(Split[2], "destination_z", 0)
+					
+					warpini:WriteFile(GetIniFileName)
+					
+					Player:SendMessage('Warp "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '" created!')
+					
+					LoadPortalsData()
+				else
+					Player:SendMessage("The portal volume can't be empty!")
+				end
 			else
 				Player:SendMessage('There already is a warp, named "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '"')
 			end
@@ -107,7 +112,7 @@ function HandleMakeDestinationCommand(Split, Player)
 				Player:SendMessage('The id "' .. cChatColor.LightBlue .. Split[2] .. cChatColor.White .. '" doesn\'t exist!')
 			end
 		else
-			Player:SendMessage("Usage: "..Split[1].." <id> <target_id>")
+			Player:SendMessage("Usage: "..Split[1].." <id>")
 		end
 	else
 		Player:SendMessage("You're not allowed to create destinations")
@@ -149,7 +154,7 @@ function HandleMakeEnterCommand(Split, Player)
 				Player:SendMessage('You can\'t set the target as itself!')
 			end
 		else
-			Player:SendMessage("Usage: "..Split[1].." <id>")
+			Player:SendMessage("Usage: "..Split[1].." <id> <target_id>")
 		end
 	else
 		Player:SendMessage("You're not allowed to connect 2 portal destinations")

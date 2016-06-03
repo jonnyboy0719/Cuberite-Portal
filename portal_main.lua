@@ -3,7 +3,7 @@ PLUGIN = {}	-- Reference to own plugin object
 -- LOGIC
 PORTAL_ACTIVATION_TIME = 1
 PlayersData = {}
-	PlayersData.zones = {}
+PlayersData.zones = {}
 PortalsData = {}
 
 -- Teleportation fixes
@@ -111,45 +111,51 @@ end
 
 function OnPlayerBreakingBlock(Player, IN_x, IN_y, IN_z, BlockFace, Status, OldBlock, OldMeta)
 	local _name = Player:GetName()
-	local playerini = cIniFile()
-	local GetIniFileName = "portals_players.ini"
 	
-	if PortalsData[_name]["hastool"] == 1 then
-		if (PlayersData[_name] == nil) then
-			PlayersData[_name] = {}	-- create player's page
+	if (Player:HasPermission("portal.create") == true) then
+		
+		if PortalsData[_name] == nil then
+			PortalsData[_name] = {}	-- create player's page
+			PortalsData[_name]["hastool"] = 0
 		end
 		
-		if PlayersData[_name].IsRightclicking == nil then
-			PlayersData[_name].IsRightclicking = false
-		end
-		
-		if not PlayersData[_name].IsRightclicking then
-			if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
-				if (PlayersData[_name].point1 == nil) then
-				-- debug
-				--	Player:SendMessage(IN_x);
-					PlayersData[_name].point1 = Vector3i()
-				end
-				PlayersData[_name].point1.x = IN_x
-				PlayersData[_name].point1.y = IN_y
-				PlayersData[_name].point1.z = IN_z
-				Player:SendMessage("First portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
-				Player:SendMessage(cChatColor.LightBlue .. "Now select the second portal entrance volume point.")
-				PlayersData[_name].IsRightclicking = true
-				return true
+		if PortalsData[_name]["hastool"] == 1 then
+			if PlayersData[_name] == nil then
+				PlayersData[_name] = {}	-- create player's page
 			end
-		else
-			if (IN_x ~= -1 and IN_y ~= 255 and IN_z ~= -1) then
+			
+			if PlayersData[_name].IsRightclicking == nil then
+				PlayersData[_name].IsRightclicking = false
+			end
+			
+			if not PlayersData[_name].IsRightclicking then
 				if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
-					if (PlayersData[_name].point2 == nil) then
-						PlayersData[_name].point2 = Vector3i()
+					if (PlayersData[_name].point1 == nil) then
+					-- debug
+					--	Player:SendMessage(IN_x);
+						PlayersData[_name].point1 = Vector3i()
 					end
-					PlayersData[_name].point2.x = IN_x
-					PlayersData[_name].point2.y = IN_y
-					PlayersData[_name].point2.z = IN_z
-					Player:SendMessage("Second portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
-					PlayersData[_name].IsRightclicking = false
+					PlayersData[_name].point1.x = IN_x
+					PlayersData[_name].point1.y = IN_y
+					PlayersData[_name].point1.z = IN_z
+					Player:SendMessage("First portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
+					Player:SendMessage(cChatColor.LightBlue .. "Now select the second portal entrance volume point.")
+					PlayersData[_name].IsRightclicking = true
 					return true
+				end
+			else
+				if (IN_x ~= -1 and IN_y ~= 255 and IN_z ~= -1) then
+					if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
+						if (PlayersData[_name].point2 == nil) then
+							PlayersData[_name].point2 = Vector3i()
+						end
+						PlayersData[_name].point2.x = IN_x
+						PlayersData[_name].point2.y = IN_y
+						PlayersData[_name].point2.z = IN_z
+						Player:SendMessage("Second portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
+						PlayersData[_name].IsRightclicking = false
+						return true
+					end
 				end
 			end
 		end
