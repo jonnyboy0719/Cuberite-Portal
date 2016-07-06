@@ -1,35 +1,35 @@
-g_PluginInfo = 
+g_PluginInfo =
 {
-	Name = "Portal v2",
+	Name = "Portal-v2",
 	Version = "2.0.4",
 	Date = "2015-11-09",
 	SourceLocation = "https://github.com/jonnyboy0719/Cuberite-Portal/",
 	Description = [[Create portals to other places on the world, or to other worlds!]],
-	
+
 	Commands =
 	{
-		["/ptoggle"] = 
+		["/ptoggle"] =
 		{
 			Permission = "portal.create",
 			Handler = HandleToggleCommand,
 			HelpString = "Switches to volume selection mode",
 		},
 
-		["/pwarp"] = 
+		["/pwarp"] =
 		{
 			Permission = "portal.create",
 			Handler = HandleMakeWarpCommand,
 			HelpString = "Creates warp point with given name",
 		},
 
-		["/penter"] = 
+		["/penter"] =
 		{
 			Permission = "portal.create",
 			Handler = HandleMakeEnterCommand,
 			HelpString = "Connects 2 portals together",
 		},
-		
-		["/pdest"] = 
+
+		["/pdest"] =
 		{
 			Permission = "portal.create",
 			Handler = HandleMakeDestinationCommand,
