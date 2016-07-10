@@ -1,164 +1,214 @@
 -- Global variables
-PLUGIN = {}	-- Reference to own plugin object
+PLUGIN = {} -- Reference to own plugin object
 -- LOGIC
-PORTAL_ACTIVATION_TIME = 1
-PlayersData = {}
-PlayersData.zones = {}
-PortalsData = {}
+PORTAL_ACTIVATION_TIME = .5
 
--- Teleportation fixes
-local IsWorld = false
+PLAYER_STATES = {
+  ["NOT_IN_PORTAL"] = "NOT_IN_PORTAL",
+  ["WAITING"] = "WAITING",
+  ["NOT_IN_PORTAL"] = "NOT_IN_PORTAL",
+  ["PORTAL_NOT_SETUP"] = "PORTAL_NOT_SETUP",
+}
+
+DATA = {}
+
+PORTALS_INI_NAME = "portals_portals.ini"
+PLAYERS_INI_NAME = "portals_players.ini"
+
+PLUGIN_PATH = ''
+DATA.portalIniFile = cIniFile()
+playersIniFile = cIniFile()
 
 function Initialize(Plugin)
-	PLUGIN = Plugin
-	
-	dofile(cPluginManager:GetPluginsPath() .. "/InfoReg.lua")
-	
-	Plugin:SetName(g_PluginInfo.Name)
-	Plugin:SetVersion(2)
-	
-	PluginManager = cRoot:Get():GetPluginManager()
-	cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_MOVING, OnPlayerMoving)
-	cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_LEFT_CLICK, OnPlayerBreakingBlock)
-	cPluginManager:AddHook(cPluginManager.HOOK_ENTITY_CHANGED_WORLD, OnEntityChangedWorld)
-	
-	Plugin:AddWebTab("Portals", HandleRequest_Portals)
-	Plugin:AddWebTab("Players", HandleRequest_Players)
-	
-	RegisterPluginInfoCommands();
-	
-	LoadPortalsData()
-	LoadPlayersData()
-	LOG("Initialized " .. PLUGIN:GetName() .. " v" .. g_PluginInfo.Version)
-	return true
+  PLUGIN = Plugin
+
+  dofile(cPluginManager:GetPluginsPath() .. "/InfoReg.lua")
+
+  Plugin:SetName(g_PluginInfo.Name)
+  Plugin:SetVersion(2)
+
+  PluginManager = cRoot:Get():GetPluginManager()
+  cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_MOVING, OnPlayerMoving)
+  cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_JOINED, onPlayerJoin)
+  cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_DESTROYED, onPlayerDestroyed)
+  cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_LEFT_CLICK, OnPlayerBreakingBlock)
+  cPluginManager:AddHook(cPluginManager.HOOK_ENTITY_CHANGED_WORLD, OnEntityChangedWorld)
+
+  Plugin:AddWebTab("Portals", HandleRequest_Portals)
+  Plugin:AddWebTab("Players", HandleRequest_Players)
+
+  RegisterPluginInfoCommands();
+  PLUGIN_PATH = cPluginManager:GetPluginsPath() .. "/" .. Plugin:GetFolderName() .. "/"
+
+  -- load ini files into memory or create them.
+  initINI(PORTALS_INI_NAME, DATA.portalIniFile)
+  DATA.portals = portalIniToTable(DATA.portalIniFile)
+
+  initINI(PLAYERS_INI_NAME, playersIniFile)
+  DATA.players = playerIniToTable(playersIniFile)
+
+  LOG("Initialized " .. PLUGIN:GetName() .. " v" .. g_PluginInfo.Version)
+  return true
+end
+
+function initINI(fileName, iniObject)
+  if cFile:IsFile(PLUGIN_PATH .. fileName) then
+    iniObject:ReadFile(PLUGIN_PATH .. fileName)
+    LOG(PLUGIN:GetName() .. ": loaded " .. fileName)
+  else
+    local success, _ = pcall(iniObject.WriteFile, iniObject, PLUGIN_PATH ..fileName)
+    if success then
+        LOG("PORTALS PLUGIN " .. fileName .. " created.")
+    end
+  end
 end
 
 function OnDisable()
-	LOG(PLUGIN:GetName() .. " v" .. g_PluginInfo.Version .. " is shutting down...")
+  portalDataToIni()
+  DATA.portalIniFile:WriteFile(PLUGIN_PATH .. PORTALS_INI_NAME)
+  playersIniFile:WriteFile(PLUGIN_PATH .. PLAYERS_INI_NAME)
+  LOG(PLUGIN:GetName() .. " v" .. g_PluginInfo.Version .. " is shutting down...")
+end
+
+function teleportPlayer(Player, targetPortalName)
+  local portalData = DATA.portals[targetPortalName]
+  local playerData = DATA.players[Player:GetName()]
+
+  if (Player:GetWorld():GetName() ~= portalData["world"]) then
+
+    playerData.HasTeleportedToWorld = true
+    playerData.targetPortalName = targetPortalName
+
+    Player:MoveToWorld(portalData["world"])
+  else
+    Player:TeleportToCoords(portalData["destination_x"], portalData["destination_y"], portalData["destination_z"])
+    Player:SendMessage(cChatColor.Yellow .. "You have been teleported!")
+  end
+
+  playerData.portal_state = PLAYER_STATES.NOT_IN_PORTAL
 end
 
 function OnPlayerMoving(Player)
-	local _name = Player:GetName()
-	if (PlayersData[_name] == nil) then
-		PlayersData[_name] = {}	-- create player's page
-		
-		PlayersData[_name].IsWorld = false
-		PlayersData[_name].HasTeleported = false
-	end
-	if (PlayersData[_name].portal_state == nil) then
-		PlayersData[_name].portal_state = -1
-	end
-	local _zone = FindZone(Player)
-	if (_zone ~= false) then
-		local TargetArea = PortalsData[_zone]["target"]
-		if TargetArea ~= "" then
-			if (PlayersData[_name].portal_state == -1) then
-				Player:SendMessage(cChatColor.LightBlue .. "Stand still for a few seconds for teleportation")
-				PlayersData[_name].portal_state = 1
-			end
-			if (os.clock() > PlayersData[_name].portal_timer) then
-				-- Lets teleport the player
-				if (Player:GetWorld():GetName() ~= PortalsData[_zone]["target"]) then
-				
-					PlayersData[_name].IsWorld = true
-					PlayersData[_name].HasTeleported = true
-					PlayersData[_name].zones = _zone
-					
-					Player:MoveToWorld(PortalsData[TargetArea]["world"])
-				else
-					Player:TeleportToCoords(PortalsData[TargetArea]["destination_x"], PortalsData[TargetArea]["destination_y"], PortalsData[TargetArea]["destination_z"])
-					Player:SendMessage(cChatColor.Yellow .. "You have been teleported!")
-				end
-				PlayersData[_name].portal_state = -1
-				PlayersData[_name].portal_timer = os.clock() + PORTAL_ACTIVATION_TIME
-				return true
-			end
-		else
-			if (PlayersData[_name].portal_state == -1) then
-				Player:SendMessage(cChatColor.Red .. "This portal doesn't lead anywhere!")
-				PlayersData[_name].portal_state = -2
-			end
-		end
-	else
-		PlayersData[_name].portal_timer = os.clock() + PORTAL_ACTIVATION_TIME
-		if (PlayersData[_name].portal_state == 1) then
-			Player:SendMessage(cChatColor.Red .. "You have left teleportation zone")
-			PlayersData[_name].portal_state = -1
-		else
-			PlayersData[_name].portal_state = -1
-		end
-	end
+  local playerName = Player:GetName()
+  local playerData = DATA.players[playerName]
+  local portalName = playerInAPortal(Player) -- only returns result when player is in portal area
+
+  if (portalName) then
+    local portalData = DATA.portals[portalName]
+    local targetPortalName = portalData["target"]
+
+    -- check if we already set state to PORTAL_NOT_SETUP
+    if playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP then
+      return false
+    end
+
+    -- check if the portal is not set up
+    if targetPortalName == "" or targetPortalName == nil then
+      Player:SendMessage(cChatColor.Red .. "This portal doesn't lead anywhere!")
+      playerData.state = PLAYER_STATES.PORTAL_NOT_SETUP
+      return false
+    end
+
+    -- check if player just entered
+    if (playerData.state == PLAYER_STATES.NOT_IN_PORTAL) then
+      Player:SendMessage(cChatColor.LightBlue .. "Stand still for a few seconds for teleportation")
+      playerData.portal_timer = os.clock() + PORTAL_ACTIVATION_TIME
+      playerData.state = PLAYER_STATES.WAITING
+    end
+
+    if (os.clock() > playerData.portal_timer) then
+      -- Lets teleport the player
+      teleportPlayer(Player, targetPortalName)
+      return true
+    end
+
+  else
+    if (playerData.state ~= PLAYER_STATES.NOT_IN_PORTAL) then
+      Player:SendMessage(cChatColor.Red .. "You have left teleportation zone")
+    end
+
+    playerData.state = PLAYER_STATES.NOT_IN_PORTAL
+  end
     return false
 end
 
 function OnEntityChangedWorld(Entity, World)
-	if Entity:IsPlayer() then
-		if HasTeleported then
-			local _name = Entity:GetName()
-			local _zone = PlayersData[_name].zones
-			
-			local TargetArea = PortalsData[_zone]["target"]
+  -- this will teleport the player to the desired location after changing worlds
+  if Entity:IsPlayer() then
+    local playerName = Entity:GetName()
+    local playerData = DATA.players[playerName]
+    if playerData.HasTeleportedToWorld then
+      local portalName = playerData.targetPortalName
+      local targetPortal = DATA.portals[portalName]
 
-			Entity:TeleportToCoords(PortalsData[TargetArea]["destination_x"], PortalsData[TargetArea]["destination_y"], PortalsData[TargetArea]["destination_z"])
-			Entity:SendMessage(cChatColor.Yellow .. "You have been teleported!")
-			
-			PlayersData[_name].IsWorld = false
-			PlayersData[_name].HasTeleported = false
-		end
-	end
-	return false
+      Entity:TeleportToCoords(targetPortal.destination_x,
+                              targetPortal.destination_y,
+                              targetPortal.destination_z)
+      Entity:SendMessage(cChatColor.Yellow .. "You have been teleported!")
+
+      playerData.targetPortalName = ""
+      playerData.HasTeleportedToWorld = false
+    end
+  end
+  return false
 end
 
 function OnPlayerBreakingBlock(Player, IN_x, IN_y, IN_z, BlockFace, Status, OldBlock, OldMeta)
-	local _name = Player:GetName()
-	
-	if (Player:HasPermission("portal.create") == true) then
-		
-		if PortalsData[_name] == nil then
-			PortalsData[_name] = {}	-- create player's page
-			PortalsData[_name]["hastool"] = 0
-		end
-		
-		if PortalsData[_name]["hastool"] == 1 then
-			if PlayersData[_name] == nil then
-				PlayersData[_name] = {}	-- create player's page
-			end
-			
-			if PlayersData[_name].IsRightclicking == nil then
-				PlayersData[_name].IsRightclicking = false
-			end
-			
-			if not PlayersData[_name].IsRightclicking then
-				if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
-					if (PlayersData[_name].point1 == nil) then
-					-- debug
-					--	Player:SendMessage(IN_x);
-						PlayersData[_name].point1 = Vector3i()
-					end
-					PlayersData[_name].point1.x = IN_x
-					PlayersData[_name].point1.y = IN_y
-					PlayersData[_name].point1.z = IN_z
-					Player:SendMessage("First portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
-					Player:SendMessage(cChatColor.LightBlue .. "Now select the second portal entrance volume point.")
-					PlayersData[_name].IsRightclicking = true
-					return true
-				end
-			else
-				if (IN_x ~= -1 and IN_y ~= 255 and IN_z ~= -1) then
-					if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
-						if (PlayersData[_name].point2 == nil) then
-							PlayersData[_name].point2 = Vector3i()
-						end
-						PlayersData[_name].point2.x = IN_x
-						PlayersData[_name].point2.y = IN_y
-						PlayersData[_name].point2.z = IN_z
-						Player:SendMessage("Second portal entrance volume point selected at: (" .. cChatColor.LightGreen .. IN_x .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_y .. cChatColor.White .. "," .. cChatColor.LightGreen .. IN_z .. cChatColor.White .. ")")
-						PlayersData[_name].IsRightclicking = false
-						return true
-					end
-				end
-			end
-		end
-	end
-	return false
+  local playerName = Player:GetName()
+  local playerData = DATA.players[playerName]
+
+  if (Player:HasPermission("portal.create") == true and playerData["HasToolEnabled"] == 1) then
+    if playerData.isSelectingPoint2 then
+      if (IN_x ~= -1 and IN_y ~= 255 and IN_z ~= -1) and ItemToString(Player:GetEquippedItem()) == "woodsword" then
+
+          if (playerData.point2 == nil) then
+            playerData.point2 = Vector3i()
+          end
+
+          playerData.point2.x = IN_x
+          playerData.point2.y = IN_y
+          playerData.point2.z = IN_z
+          Player:SendMessage(portalPointSelectMessage("Second", IN_x, IN_y, IN_z))
+          playerData.isSelectingPoint2 = false
+          return true
+      end
+    else
+      if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
+        if (playerData.point1 == nil) then
+        -- debug
+        --  Player:SendMessage(IN_x);
+          playerData.point1 = Vector3i()
+        end
+        playerData.point1.x = IN_x
+        playerData.point1.y = IN_y
+        playerData.point1.z = IN_z
+        Player:SendMessage(portalPointSelectMessage("First", IN_x, IN_y, IN_z))
+        Player:SendMessage(cChatColor.LightBlue .. "Now select the second portal entrance volume point.")
+        playerData.isSelectingPoint2 = true
+        return true
+      end
+
+    end
+  end
+  return false
+end
+
+function onPlayerJoin(Player)
+  local playerName = Player:GetName()
+  if DATA.players[playerName] == nil then
+    DATA.players[playerName] = {
+      targetPortalName = "",
+      HasToolEnabled = 0,
+      HasTeleportedToWorld = false,
+      isSelectingPoint2 = false,
+      state = PLAYER_STATES.NOT_IN_PORTAL,
+    }
+  end
+end
+
+function onPlayerDestroyed(Player)
+  local playerName = Player:GetName()
+  if DATA.players[playerName] then
+    DATA.players[playerName] = nil
+  end
 end
