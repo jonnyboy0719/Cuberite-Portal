@@ -19,6 +19,9 @@ PLUGIN_PATH = ''
 DATA.portalIniFile = cIniFile()
 playersIniFile = cIniFile()
 
+CSS_STYLES = nil
+WORLDS = {}
+
 function Initialize(Plugin)
   PLUGIN = Plugin
 
@@ -37,9 +40,11 @@ function Initialize(Plugin)
   Plugin:AddWebTab("Portals", HandleRequest_Portals)
   Plugin:AddWebTab("Players", HandleRequest_Players)
 
+  cRoot:Get():ForEachWorld(function(world) WORLDS[#WORLDS + 1] = world:GetName() end)
+
   RegisterPluginInfoCommands();
   PLUGIN_PATH = cPluginManager:GetPluginsPath() .. "/" .. Plugin:GetFolderName() .. "/"
-
+  CSS_STYLES = cFile:ReadWholeFile(PLUGIN_PATH .. "portal-styles.css")
   -- load ini files into memory or create them.
   initINI(PORTALS_INI_NAME, DATA.portalIniFile)
   DATA.portals = portalIniToTable(DATA.portalIniFile)
@@ -66,6 +71,7 @@ end
 function OnDisable()
   portalDataToIni()
   DATA.portalIniFile:WriteFile(PLUGIN_PATH .. PORTALS_INI_NAME)
+  
   playersIniFile:WriteFile(PLUGIN_PATH .. PLAYERS_INI_NAME)
   LOG(PLUGIN:GetName() .. " v" .. g_PluginInfo.Version .. " is shutting down...")
 end

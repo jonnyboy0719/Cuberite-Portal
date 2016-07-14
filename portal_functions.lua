@@ -170,10 +170,9 @@ function portalIniToTable(Portalini)
   return PortalsData
 end
 
-function portalDataToIni(table)
+function portalDataToIni()
   local ini = DATA.portalIniFile
-
-  for key, val in pairs(table) do
+  for key, val in pairs(DATA.portals) do
     local portalData = DATA.portals[key]
     if ini:FindKey(key) then
        ini:SetValue( key , "world", portalData["world"])
@@ -203,7 +202,14 @@ function portalDataToIni(table)
     end
   end
 
-  return ini
+  -- remove deleted
+  local numKeys = ini:GetNumKeys()
+  for i=0, numKeys - 1 do
+    local portalName = ini:GetKeyName(i)
+    if not DATA.portals[portalName] then
+      ini:DeleteKey(portalName)
+    end
+  end 
 end
 
 function playerIniToTable(playerini)
