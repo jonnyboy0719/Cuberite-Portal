@@ -35,5 +35,17 @@ g_PluginInfo =
 			Handler = HandleMakeDestinationCommand,
 			HelpString = "Create the destination for a portal ID",
 		},
+		["/plist"] =
+		{
+			Permission = "portal.info",
+			Handler = HandleListPortals,
+			HelpString = "List the created portals",
+		},
+		["/pdetail"] =
+		{
+			Permission = "portal.info",
+			Handler = HandleListPortalDetails,
+			HelpString = "List config for individual portal",
+		},
 	},
 }

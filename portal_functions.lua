@@ -107,6 +107,43 @@ function HandleMakeEnterCommand(Split, Player)
   return true
 end
 
+function HandleListPortals(Split, Player)
+  Player:SendMessage("name -> target")
+  Player:SendMessage("--------------")
+  for k, v in pairs(DATA.portals) do
+    Player:SendMessage(k .. " -> " .. DATA.portals[k].target)
+  end
+  return true
+end
+
+function HandleListPortalDetails(Split, Player)
+  local portalName = Split[2]
+  if not portalName then
+    Player:SendMessage(cChatColor.Red .. "you must supply a portal name")
+    return true
+  end
+
+  local portalData = DATA.portals[portalName]
+  if not portalData then
+    Player:SendMessage(cChatColor.Red .. "portal " .. portalName .. "Does not exist")  
+    return true
+  end
+
+  local destPoints = getPoints("destination", portalData)
+  local point1 = getPoints("portal_point1", portalData)
+  local point2 = getPoints("portal_point2", portalData)
+
+  Player:SendMessage("portal: " .. portalName)
+  Player:SendMessage("--------------")
+  Player:SendMessage("target = " .. portalData.target)
+  Player:SendMessage("world = " .. portalData.world)
+  Player:SendMessage("dest = " .. destPoints.x .. ", " .. destPoints.y .. ", " .. destPoints.z)
+  Player:SendMessage("point 1 = " .. point1.x .. ", " .. point1.y .. ", " .. point1.z)
+  Player:SendMessage("point 2 = " .. point2.x .. ", " .. point2.y .. ", " .. point2.z)
+  Player:SendMessage("--------------")
+  return true
+end
+
 function portalIniToTable(Portalini)
   local PortalsData = {}
   local warpNum = Portalini:GetNumKeys();
@@ -221,4 +258,13 @@ function portalPointSelectMessage(num, x, y, z)
    cChatColor.LightGreen .. x .. cChatColor.White .. "," .. 
    cChatColor.LightGreen .. y .. cChatColor.White .. "," .. 
    cChatColor.LightGreen .. z .. cChatColor.White .. ")"
+end
+
+function getPoints(prefix, data)
+  local table = {}
+  table.x = data[prefix .. "_x"]
+  table.y = data[prefix .. "_y"]
+  table.z = data[prefix .. "_z"]
+
+  return table
 end
