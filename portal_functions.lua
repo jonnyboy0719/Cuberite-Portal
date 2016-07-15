@@ -212,21 +212,6 @@ function portalDataToIni()
 	end 
 end
 
-function playerIniToTable(playerini)
-	local playerData = {}
-	enabledPlayers = playerini:GetNumKeys()
-	if enabledPlayers > 0 then
-		for i=0, enabledPlayers - 1 do
-			local Tag = playerini:GetKeyName(i)
-			playerData[Tag] = {}
-			-- HasToolEnabled will be parsed as bool once new release comes out with cJson fix
-			playerData[Tag]["HasToolEnabled"] = playerini:GetValueI(Tag , "HasToolEnabled")
-		end
-	end
-
-	return playerData
-end
-
 function playerInAPortal(Player)
 	local _check_cuboid = cCuboid()
 	local _player_pos = Player:GetPosition()

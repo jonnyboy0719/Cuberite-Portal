@@ -1,17 +1,3 @@
-function playersDisplay(players)
-	str = ""
-	for key, val in pairs(players) do
-		val = players[key]["HasToolEnabled"] and "true" or "false"
-		str = str .. [[
-			<div>
-				]] .. key .. " HasToolEnabled: " .. val .. [[
-			</div>
-		]]
-	end
-
-	return str
-end
-
 function HandleRequest_Portals(Request)
 	local Query = getQuery(Request.URL)
 	if Request.Method == 'POST' then
@@ -30,21 +16,6 @@ function HandleRequest_Portals(Request)
 
 	local path = StringSplit(Request.URL, "?")[1]
 	return renderGuiForm(DATA.portals, Query.edit, path)
-end
-
-function HandleRequest_Players(Request)
-	if (Request.Method == "POST") then
-		local val = Request.PostParams[PLAYERS_FIELD_KEY]
-		if (val ~= nil) then
-			saveFile(PLAYERS_INI_NAME , val)
-		end
-	end
-
-	return [[
-		<div>
-			]] .. playersDisplay(DATA.players) .. [[
-		</div>
-	]]
 end
 
 function saveNewPortal(name, fields)

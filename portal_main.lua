@@ -11,13 +11,12 @@ PLAYER_STATES = {
 }
 
 DATA = {}
+DATA.players = {}
 
 PORTALS_INI_NAME = "portals_portals.ini"
-PLAYERS_INI_NAME = "portals_players.ini"
 
 PLUGIN_PATH = ''
 DATA.portalIniFile = cIniFile()
-playersIniFile = cIniFile()
 
 CSS_STYLES = nil
 WORLDS = {}
@@ -38,7 +37,6 @@ function Initialize(Plugin)
 	cPluginManager:AddHook(cPluginManager.HOOK_ENTITY_CHANGED_WORLD, OnEntityChangedWorld)
 
 	Plugin:AddWebTab("Portals", HandleRequest_Portals)
-	Plugin:AddWebTab("Players", HandleRequest_Players)
 
 	cRoot:Get():ForEachWorld(function(world) WORLDS[#WORLDS + 1] = world:GetName() end)
 
@@ -48,9 +46,6 @@ function Initialize(Plugin)
 	-- load ini files into memory or create them.
 	initINI(PORTALS_INI_NAME, DATA.portalIniFile)
 	DATA.portals = portalIniToTable(DATA.portalIniFile)
-
-	initINI(PLAYERS_INI_NAME, playersIniFile)
-	DATA.players = playerIniToTable(playersIniFile)
 
 	LOG("Initialized " .. PLUGIN:GetName() .. " v" .. g_PluginInfo.Version)
 	return true
@@ -72,7 +67,6 @@ function OnDisable()
 	portalDataToIni()
 	DATA.portalIniFile:WriteFile(PLUGIN_PATH .. PORTALS_INI_NAME)
 	
-	playersIniFile:WriteFile(PLUGIN_PATH .. PLAYERS_INI_NAME)
 	LOG(PLUGIN:GetName() .. " v" .. g_PluginInfo.Version .. " is shutting down...")
 end
 
