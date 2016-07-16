@@ -111,3 +111,10 @@ input {
   top: 75px;
   right: 22px;
 }
+
+.global-disable-form {
+  padding-left: 10px;
+  font-weight: bold;
+  border-bottom: 1px solid lightgray;
+  padding-bottom: 10px;
+}

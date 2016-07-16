@@ -176,6 +176,13 @@ function HandlePLayerDetails(Split, Player)
 	return true
 end
 
+function HandleToggleAllPortalsdisabled(Split, Player)
+  DATA.all_portals_disabled = not DATA.all_portals_disabled
+  local text = DATA.all_portals_disabled and "disabled" or "enabled"
+  Player:SendMessage(cChatColor.Red .. "All portals are now " .. text)
+  return true
+end
+
 function portalIniToTable(Portalini)
 	local PortalsData = {}
 	local warpNum = Portalini:GetNumKeys();

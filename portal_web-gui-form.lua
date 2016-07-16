@@ -34,10 +34,17 @@ function renderGuiForm(portalConfigs, portalToEditName, path)
 		name = portalToEditName
 	end
 
+	local globalDisableMessage = DATA.all_portals_disabled and "Disable" or "Enable"
+
 	return [[ 
 		<style> ]]
 			.. CSS_STYLES .. [[
 		</style> ]] .. [[
+	  <form method="post" class="global-disable-form" >
+	    <input hidden name='disable' value='global_disable' />
+	    <span>Global portal lock </span>
+			<button type="submit">]] .. globalDisableMessage .. [[</button>
+	  </form>
 		<form class='table' id='portalForm' method="post" action="]] .. path .. [[">
 			<div class='block'>
 				<h3>Name</h3>

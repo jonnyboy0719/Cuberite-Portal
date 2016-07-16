@@ -42,7 +42,9 @@ function delPortal(portalName)
 end
 
 function toggleDisable(portalName)
-	if DATA.portals[portalName] then
+	if portalName == "global_disable" then
+		DATA.all_portals_disabled = not DATA.all_portals_disabled
+	elseif DATA.portals[portalName] then
 		DATA.portals[portalName].disabled = not DATA.portals[portalName].disabled
 	end 
 end

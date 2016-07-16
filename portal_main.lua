@@ -13,6 +13,8 @@ PLAYER_STATES = {
 
 DATA = {}
 DATA.players = {}
+DATA.portals = {}
+DATA.all_portals_disabled = false
 
 PORTALS_INI_NAME = "portals_portals.ini"
 
@@ -92,7 +94,7 @@ function OnPlayerMoving(Player)
 		local portalData = DATA.portals[portalName]
 		local targetPortalName = portalData["target"]
 		-- check if we already set state to PORTAL_NOT_SETUP or IN_DISABLED_PORTAL
-		if playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP or playerData.state == PLAYER_STATES.IN_DISABLED_PORTAL then
+		if playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP or playerData.state == PLAYER_STATES.IN_DISABLED_PORTAL or DATA.all_portals_disabled then
 			return false
 		end
 
