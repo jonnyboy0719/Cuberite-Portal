@@ -15,14 +15,14 @@ g_PluginInfo =
 			HelpString = "Switches to volume selection mode",
 		},
 
-		["/pwarp"] =
+		["/pinit"] =
 		{
 			Permission = "portal.create",
 			Handler = HandleMakeWarpCommand,
 			HelpString = "Creates warp point with given name",
 		},
 
-		["/penter"] =
+		["/pconnect"] =
 		{
 			Permission = "portal.create",
 			Handler = HandleMakeEnterCommand,
@@ -34,6 +34,18 @@ g_PluginInfo =
 			Permission = "portal.create",
 			Handler = HandleMakeDestinationCommand,
 			HelpString = "Create the destination for a portal ID",
+		},
+		["/plist"] =
+		{
+			Permission = "portal.info",
+			Handler = HandleListPortals,
+			HelpString = "List the created portals",
+		},
+		["/pdetail"] =
+		{
+			Permission = "portal.info",
+			Handler = HandleListPortalDetails,
+			HelpString = "List config for individual portal",
 		},
 	},
 }
