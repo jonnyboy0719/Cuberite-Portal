@@ -59,11 +59,12 @@ input {
 .preview-item__left {
   display: inline-block;
   vertical-align: top;
-  width: 100px;
+  width: 125px;
 }
 
 .preview-item__left p {
-  margin: 5px 0;
+  margin: 0;
+  padding: 0;
 }
 
 .preview-item__name {
@@ -101,5 +102,12 @@ input {
   border: none;
   position: absolute;
   top: 50px;
+  right: 22px;
+}
+
+.preview-item__disable {
+  border: none;
+  position: absolute;
+  top: 75px;
   right: 22px;
 }

@@ -20,9 +20,9 @@ function get(table, key, default)
 	return default
 end
 
-function renderGuiForm(portalConfig, portalToEditName, path)
+function renderGuiForm(portalConfigs, portalToEditName, path)
 	local previewItems = ""
-	for portalName, config in pairs(portalConfig) do
+	for portalName, config in pairs(portalConfigs) do
 		previewItems = previewItems .. makePreviewItem(portalName, config)
 	end
 
@@ -93,12 +93,14 @@ function makePreviewItem(portalName, portalConfig)
 	local p1 = getPoints('portal_point1', portalConfig)
 	local p2 = getPoints('portal_point2', portalConfig)
 	local dest = getPoints('destination', portalConfig)
+	local disableText = portalConfig.disabled and "enable" or "disable"
 	return [[
 	<div class='preview-item'>
 		<div class='preview-item__left'>
 			<h3 class='preview-item__name'>]] .. portalName .. [[</h3>
 			<p>world: ]] .. portalConfig.world .. [[</p>
 			<p>target: ]] .. portalConfig.target .. [[</p>
+			<p>disabled: ]] .. tostring(portalConfig.disabled) .. [[</p>
 		</div>
 		<div class='preview-item__right'>
 			]] .. previewPointBox("Point 1", p1.x, p1.y, p1.z) .. [[
@@ -111,6 +113,10 @@ function makePreviewItem(portalName, portalConfig)
 			<form method="post">
 				<input hidden name='del' value=']] .. portalName .. [[' />
 				<button class="preview-item__del">Del</button>
+			</form>
+			<form method="post">
+				<input hidden name='disable' value=']] .. portalName .. [[' />
+				<button class="preview-item__disable">]] .. disableText .. [[</button>
 			</form>
 		</div>
 	</div>

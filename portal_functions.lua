@@ -37,6 +37,7 @@ function HandleMakeWarpCommand(Split, Player)
 					portalData.destination_x = 0
 					portalData.destination_y = 0
 					portalData.destination_z = 0
+					portalData.disabled = false
 
 					playerData.point1 = nil
 					playerData.point2 = nil
@@ -135,6 +136,7 @@ function HandleListPortalDetails(Split, Player)
 
 	Player:SendMessage("portal: " .. portalName)
 	Player:SendMessage("--------------")
+	Player:SendMessage("disabled = " .. tostring(portalData.disabled))
 	Player:SendMessage("target = " .. portalData.target)
 	Player:SendMessage("world = " .. portalData.world)
 	Player:SendMessage("dest = " .. destPoints.x .. ", " .. destPoints.y .. ", " .. destPoints.z)
