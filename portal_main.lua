@@ -155,7 +155,7 @@ function OnPlayerBreakingBlock(Player, IN_x, IN_y, IN_z, BlockFace, Status, OldB
 	local playerName = Player:GetName()
 	local playerData = DATA.players[playerName]
 
-	if (Player:HasPermission("portal.create") == true and playerData["HasToolEnabled"] == 1) then
+	if (Player:HasPermission("portal.create") == true and playerData["HasToolEnabled"] == true) then
 		if playerData.isSelectingPoint2 then
 			if (IN_x ~= -1 and IN_y ~= 255 and IN_z ~= -1) and ItemToString(Player:GetEquippedItem()) == "woodsword" then
 
@@ -197,7 +197,7 @@ function onPlayerJoin(Player)
 		DATA.players[playerName] = {
 			portal_timer = 0,
 			targetPortalName = "",
-			HasToolEnabled = 0,
+			HasToolEnabled = false,
 			HasTeleportedToWorld = false,
 			isSelectingPoint2 = false,
 			state = PLAYER_STATES.NOT_IN_PORTAL,

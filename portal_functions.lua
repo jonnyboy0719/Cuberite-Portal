@@ -2,11 +2,11 @@ function HandleToggleCommand(Split, Player)
 	if (Player:HasPermission("portal.create") == true) then
 		local playerData = DATA.players[Player:GetName()]
 
-		if playerData.HasToolEnabled == 1 then
-			playerData.HasToolEnabled = 0
+		if playerData.HasToolEnabled == true then
+			playerData.HasToolEnabled = false
 			Player:SendMessage("Your wooden sword will now act as usual")
 		else
-			playerData.HasToolEnabled = 1
+			playerData.HasToolEnabled = true
 			Player:SendMessage("Your wooden sword will now select portal entrance zone")
 		end
 	end
