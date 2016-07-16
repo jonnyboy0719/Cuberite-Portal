@@ -144,6 +144,25 @@ function HandleListPortalDetails(Split, Player)
 	return true
 end
 
+function HandleToggleDisablePortal(Split, Player)
+	local portal = Split[2]
+	local command = Split[1]
+	local portalData = DATA.portals[portal]
+
+	if portalData then
+		if command == "/pdisable" then
+			portalData.disabled = true
+			Player:SendMessage("portal " .. portal .. " disabled")
+		elseif command == "/penable" then
+			portalData.disabled = false
+			Player:SendMessage("portal " .. portal .. " Enabled")
+		end
+	else
+		Player:SendMessage("portal " .. portal .. " does not exist")	
+	end
+	return true
+end
+
 function HandlePLayerDetails(Split, Player)
 	-- for debugging
 	local playerData = DATA.players[Player:GetName()]
@@ -175,6 +194,8 @@ function portalIniToTable(Portalini)
 			portalData["destination_x"] = Portalini:GetValueI( portalName , "destination_x")
 			portalData["destination_y"] = Portalini:GetValueI( portalName , "destination_y")
 			portalData["destination_z"] = Portalini:GetValueI( portalName , "destination_z")
+			portalData["disabled"] = intToBool(Portalini:GetValueI( portalName , "disabled"))
+			
 		end
 	end
 
@@ -197,6 +218,7 @@ function portalDataToIni()
 			 ini:SetValueI( key , "destination_x", portalData["destination_x"])
 			 ini:SetValueI( key , "destination_y", portalData["destination_y"])
 			 ini:SetValueI( key , "destination_z", portalData["destination_z"])
+			 ini:SetValueI( key , "disabled", boolToInt( portalData["disabled"]))
 		else
 			ini:AddKeyName(key)
 			ini:AddValue( key , "world", portalData["world"])
@@ -210,6 +232,7 @@ function portalDataToIni()
 			ini:AddValueI( key , "destination_x", portalData["destination_x"])
 			ini:AddValueI( key , "destination_y", portalData["destination_y"])
 			ini:AddValueI( key , "destination_z", portalData["destination_z"])
+			ini:AddValueI( key , "disabled", boolToInt( portalData["disabled"]))
 		end
 	end
 
@@ -260,6 +283,26 @@ function portalPointSelectMessage(num, x, y, z)
 	 cChatColor.LightGreen .. x .. cChatColor.White .. "," .. 
 	 cChatColor.LightGreen .. y .. cChatColor.White .. "," .. 
 	 cChatColor.LightGreen .. z .. cChatColor.White .. ")"
+end
+
+function boolToInt(val)
+	if type(val) == "boolean" then
+	 if val == false then
+			return 0
+		else 
+			return 1
+		end
+	end
+end
+
+function intToBool(val)
+	if type(val) == "number" then
+	 if val == 1 then
+			return true
+		else 
+			return false
+		end
+	end
 end
 
 function getPoints(prefix, data)

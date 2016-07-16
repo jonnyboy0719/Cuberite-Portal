@@ -8,6 +8,7 @@ PLAYER_STATES = {
 	["WAITING"] = "WAITING",
 	["TELEPORTING"] = "TELEPORTING",
 	["PORTAL_NOT_SETUP"] = "PORTAL_NOT_SETUP",
+	["IN_DISABLED_PORTAL"] = "IN_DISABLED_PORTAL",
 }
 
 DATA = {}
@@ -90,9 +91,14 @@ function OnPlayerMoving(Player)
 	if (portalName) then
 		local portalData = DATA.portals[portalName]
 		local targetPortalName = portalData["target"]
+		-- check if we already set state to PORTAL_NOT_SETUP or IN_DISABLED_PORTAL
+		if playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP or playerData.state == PLAYER_STATES.IN_DISABLED_PORTAL then
+			return false
+		end
 
-		-- check if we already set state to PORTAL_NOT_SETUP
-		if playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP then
+		if portalData.disabled == true then
+			Player:SendMessage(cChatColor.Red .. "This portal is disabled")
+			playerData.state = PLAYER_STATES.IN_DISABLED_PORTAL
 			return false
 		end
 
@@ -120,7 +126,7 @@ function OnPlayerMoving(Player)
 		end
 
 	else
-		if playerData.state ~= PLAYER_STATES.NOT_IN_PORTAL and playerData.state ~= PLAYER_STATES.TELEPORTING then
+		if playerData.state == PLAYER_STATES.WAITING then
 			Player:SendMessage(cChatColor.Red .. "You have left teleportation zone")
 		end
 
