@@ -1,12 +1,12 @@
 -- Global variables
 PLUGIN = {} -- Reference to own plugin object
 -- LOGIC
-PORTAL_ACTIVATION_TIME = .5
+PORTAL_ACTIVATION_TIME = 2
 
 PLAYER_STATES = {
 	["NOT_IN_PORTAL"] = "NOT_IN_PORTAL",
 	["WAITING"] = "WAITING",
-	["NOT_IN_PORTAL"] = "NOT_IN_PORTAL",
+	["TELEPORTING"] = "TELEPORTING",
 	["PORTAL_NOT_SETUP"] = "PORTAL_NOT_SETUP",
 }
 
@@ -70,22 +70,16 @@ function OnDisable()
 	LOG(PLUGIN:GetName() .. " v" .. g_PluginInfo.Version .. " is shutting down...")
 end
 
-function teleportPlayer(Player, targetPortalName)
-	local portalData = DATA.portals[targetPortalName]
-	local playerData = DATA.players[Player:GetName()]
-
+function teleportPlayer(Player, playerData)
+	local portalData = DATA.portals[playerData.targetPortalName]
 	if (Player:GetWorld():GetName() ~= portalData["world"]) then
-
 		playerData.HasTeleportedToWorld = true
-		playerData.targetPortalName = targetPortalName
-
 		Player:MoveToWorld(portalData["world"])
 	else
 		Player:TeleportToCoords(portalData["destination_x"], portalData["destination_y"], portalData["destination_z"])
+		playerData.targetPortalName = ""
 		Player:SendMessage(cChatColor.Yellow .. "You have been teleported!")
 	end
-
-	playerData.portal_state = PLAYER_STATES.NOT_IN_PORTAL
 end
 
 function OnPlayerMoving(Player)
@@ -112,22 +106,26 @@ function OnPlayerMoving(Player)
 		-- check if player just entered
 		if (playerData.state == PLAYER_STATES.NOT_IN_PORTAL) then
 			Player:SendMessage(cChatColor.LightBlue .. "Stand still for a few seconds for teleportation")
-			playerData.portal_timer = os.clock() + PORTAL_ACTIVATION_TIME
+			playerData.portal_timer = GetTime() + PORTAL_ACTIVATION_TIME
 			playerData.state = PLAYER_STATES.WAITING
+			playerData.targetPortalName = targetPortalName
 		end
 
-		if (os.clock() > playerData.portal_timer) then
-			-- Lets teleport the player
-			teleportPlayer(Player, targetPortalName)
-			return true
+		if playerData.state == PLAYER_STATES.WAITING then
+			if (GetTime() > playerData.portal_timer) then
+				playerData.state = PLAYER_STATES.TELEPORTING
+				teleportPlayer(Player, playerData)
+				return true
+			end
 		end
 
 	else
-		if (playerData.state ~= PLAYER_STATES.NOT_IN_PORTAL) then
+		if playerData.state ~= PLAYER_STATES.NOT_IN_PORTAL and playerData.state ~= PLAYER_STATES.TELEPORTING then
 			Player:SendMessage(cChatColor.Red .. "You have left teleportation zone")
 		end
 
 		playerData.state = PLAYER_STATES.NOT_IN_PORTAL
+		playerData.targetPortalName = ""
 	end
 		return false
 end
@@ -197,6 +195,7 @@ function onPlayerJoin(Player)
 	local playerName = Player:GetName()
 	if DATA.players[playerName] == nil then
 		DATA.players[playerName] = {
+			portal_timer = 0,
 			targetPortalName = "",
 			HasToolEnabled = 0,
 			HasTeleportedToWorld = false,
