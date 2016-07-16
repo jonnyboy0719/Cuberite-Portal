@@ -144,6 +144,17 @@ function HandleListPortalDetails(Split, Player)
 	return true
 end
 
+function HandlePLayerDetails(Split, Player)
+	-- for debugging
+	local playerData = DATA.players[Player:GetName()]
+
+	Player:SendMessage("Current player data: ")
+	for k, v in pairs(playerData) do
+		Player:SendMessage(k .. ": " .. tostring(v))
+	end
+	return true
+end
+
 function portalIniToTable(Portalini)
 	local PortalsData = {}
 	local warpNum = Portalini:GetNumKeys();
