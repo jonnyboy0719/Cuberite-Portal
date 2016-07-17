@@ -16,7 +16,7 @@ DATA.players = {}
 DATA.portals = {}
 DATA.all_portals_disabled = false
 
-PORTALS_INI_NAME = "portals_portals.ini"
+PORTALS_INI_NAME = "portals.ini"
 
 PLUGIN_PATH = ''
 DATA.portalIniFile = cIniFile()
