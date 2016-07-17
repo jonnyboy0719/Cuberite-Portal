@@ -63,8 +63,8 @@ function renderGuiForm(portalConfigs, portalToEditName, path)
 				<input name='target' type='text' value=']] .. get(editPortal, "target", "") .. [['/>
 			</div>
 
-			]] .. makePointBlock("Portal Point 1", "portal_point1", editPortal) .. [[
-			]] .. makePointBlock("Portal Point 2", "portal_point2", editPortal) .. [[
+			]] .. makePointBlock("Portal Point 1", "point1", editPortal) .. [[
+			]] .. makePointBlock("Portal Point 2", "point2", editPortal) .. [[
 			]] .. makePointBlock("Portal Destination Point", "destination", editPortal) .. [[
 
 			<button class='submit-btn' type='submit'>]] .. buttonText.. [[</button>
@@ -97,8 +97,8 @@ function makePointBlock(title, prefix, editPortal)
 end
 
 function makePreviewItem(portalName, portalConfig)
-	local p1 = getPoints('portal_point1', portalConfig)
-	local p2 = getPoints('portal_point2', portalConfig)
+	local p1 = getPoints('point1', portalConfig)
+	local p2 = getPoints('point2', portalConfig)
 	local dest = getPoints('destination', portalConfig)
 	local disableText = portalConfig.disabled and "enable" or "disable"
 	return [[

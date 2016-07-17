@@ -28,12 +28,12 @@ function HandleMakeWarpCommand(Split, Player)
 
 					portalData.world = Player:GetWorld():GetName()
 					portalData.target = ""
-					portalData.portal_point1_x = point1.x
-					portalData.portal_point1_y = point1.y
-					portalData.portal_point1_z = point1.z
-					portalData.portal_point2_x = point2.x
-					portalData.portal_point2_y = point2.y
-					portalData.portal_point2_z = point2.z
+					portalData.point1_x = point1.x
+					portalData.point1_y = point1.y
+					portalData.point1_z = point1.z
+					portalData.point2_x = point2.x
+					portalData.point2_y = point2.y
+					portalData.point2_z = point2.z
 					portalData.destination_x = 0
 					portalData.destination_y = 0
 					portalData.destination_z = 0
@@ -131,8 +131,8 @@ function HandleListPortalDetails(Split, Player)
 	end
 
 	local destPoints = getPoints("destination", portalData)
-	local point1 = getPoints("portal_point1", portalData)
-	local point2 = getPoints("portal_point2", portalData)
+	local point1 = getPoints("point1", portalData)
+	local point2 = getPoints("point2", portalData)
 
 	Player:SendMessage("portal: " .. portalName)
 	Player:SendMessage("--------------")
@@ -189,17 +189,18 @@ function portalIniToTable(Portalini)
 	if warpNum > 0 then
 		for i=0, warpNum - 1 do
 			local portalName = Portalini:GetKeyName(i)
+			LOG("pname: " .. portalName)
 			PortalsData[portalName] = {}
 			local portalData = PortalsData[portalName]
 
 			portalData["world"] = Portalini:GetValue( portalName , "world")
 			portalData["target"] = Portalini:GetValue( portalName , "target")
-			portalData["portal_point1_x"] = Portalini:GetValueI( portalName , "portal_point1_x")
-			portalData["portal_point1_y"] = Portalini:GetValueI( portalName , "portal_point1_y")
-			portalData["portal_point1_z"] = Portalini:GetValueI( portalName , "portal_point1_z")
-			portalData["portal_point2_x"] = Portalini:GetValueI( portalName , "portal_point2_x")
-			portalData["portal_point2_y"] = Portalini:GetValueI( portalName , "portal_point2_y")
-			portalData["portal_point2_z"] = Portalini:GetValueI( portalName , "portal_point2_z")
+			portalData["point1_x"] = Portalini:GetValueI( portalName , "point1_x")
+			portalData["point1_y"] = Portalini:GetValueI( portalName , "point1_y")
+			portalData["point1_z"] = Portalini:GetValueI( portalName , "point1_z")
+			portalData["point2_x"] = Portalini:GetValueI( portalName , "point2_x")
+			portalData["point2_y"] = Portalini:GetValueI( portalName , "point2_y")
+			portalData["point2_z"] = Portalini:GetValueI( portalName , "point2_z")
 			portalData["destination_x"] = Portalini:GetValueI( portalName , "destination_x")
 			portalData["destination_y"] = Portalini:GetValueI( portalName , "destination_y")
 			portalData["destination_z"] = Portalini:GetValueI( portalName , "destination_z")
@@ -218,12 +219,12 @@ function portalDataToIni()
 		if ini:FindKey(key) then
 			 ini:SetValue( key , "world", portalData["world"])
 			 ini:SetValue( key , "target", portalData["target"])
-			 ini:SetValueI( key , "portal_point1_x", portalData["portal_point1_x"])
-			 ini:SetValueI( key , "portal_point1_y", portalData["portal_point1_y"])
-			 ini:SetValueI( key , "portal_point1_z", portalData["portal_point1_z"])
-			 ini:SetValueI( key , "portal_point2_x", portalData["portal_point2_x"])
-			 ini:SetValueI( key , "portal_point2_y", portalData["portal_point2_y"])
-			 ini:SetValueI( key , "portal_point2_z", portalData["portal_point2_z"])
+			 ini:SetValueI( key , "point1_x", portalData["point1_x"])
+			 ini:SetValueI( key , "point1_y", portalData["point1_y"])
+			 ini:SetValueI( key , "point1_z", portalData["point1_z"])
+			 ini:SetValueI( key , "point2_x", portalData["point2_x"])
+			 ini:SetValueI( key , "point2_y", portalData["point2_y"])
+			 ini:SetValueI( key , "point2_z", portalData["point2_z"])
 			 ini:SetValueI( key , "destination_x", portalData["destination_x"])
 			 ini:SetValueI( key , "destination_y", portalData["destination_y"])
 			 ini:SetValueI( key , "destination_z", portalData["destination_z"])
@@ -232,12 +233,12 @@ function portalDataToIni()
 			ini:AddKeyName(key)
 			ini:AddValue( key , "world", portalData["world"])
 			ini:AddValue( key , "target", portalData["target"])
-			ini:AddValueI( key , "portal_point1_x", portalData["portal_point1_x"])
-			ini:AddValueI( key , "portal_point1_y", portalData["portal_point1_y"])
-			ini:AddValueI( key , "portal_point1_z", portalData["portal_point1_z"])
-			ini:AddValueI( key , "portal_point2_x", portalData["portal_point2_x"])
-			ini:AddValueI( key , "portal_point2_y", portalData["portal_point2_y"])
-			ini:AddValueI( key , "portal_point2_z", portalData["portal_point2_z"])
+			ini:AddValueI( key , "point1_x", portalData["point1_x"])
+			ini:AddValueI( key , "point1_y", portalData["point1_y"])
+			ini:AddValueI( key , "point1_z", portalData["point1_z"])
+			ini:AddValueI( key , "point2_x", portalData["point2_x"])
+			ini:AddValueI( key , "point2_y", portalData["point2_y"])
+			ini:AddValueI( key , "point2_z", portalData["point2_z"])
 			ini:AddValueI( key , "destination_x", portalData["destination_x"])
 			ini:AddValueI( key , "destination_y", portalData["destination_y"])
 			ini:AddValueI( key , "destination_z", portalData["destination_z"])
@@ -267,13 +268,13 @@ function playerInAPortal(Player)
 				local vector1 = Vector3i()
 				local vector2 = Vector3i()
 
-				vector1.x = v["portal_point1_x"]
-				vector1.y = v["portal_point1_y"]
-				vector1.z = v["portal_point1_z"]
+				vector1.x = v["point1_x"]
+				vector1.y = v["point1_y"]
+				vector1.z = v["point1_z"]
 
-				vector2.x = v["portal_point2_x"]
-				vector2.y = v["portal_point2_y"]
-				vector2.z = v["portal_point2_z"]
+				vector2.x = v["point2_x"]
+				vector2.y = v["point2_y"]
+				vector2.z = v["point2_z"]
 
 				_check_cuboid.p1 = vector1
 				_check_cuboid.p2 = vector2
