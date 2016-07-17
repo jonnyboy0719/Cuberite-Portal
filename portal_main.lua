@@ -105,8 +105,13 @@ function OnPlayerMoving(Player)
 		end
 
 		-- check if the portal is not set up
-		if targetPortalName == "" or targetPortalName == nil then
-			Player:SendMessage(cChatColor.Red .. "This portal doesn't lead anywhere!")
+		if targetPortalName == "" or targetPortalName == nil or targetPortalHasNoDest(DATA.portals[targetPortalName]) then
+			if targetPortalHasNoDest(DATA.portals[targetPortalName]) then
+				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortalName .. "does not have a destination point set")
+			else
+				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortalName .. "doesn't lead anywhere!")	
+			end
+			
 			playerData.state = PLAYER_STATES.PORTAL_NOT_SETUP
 			return false
 		end
@@ -136,6 +141,13 @@ function OnPlayerMoving(Player)
 		playerData.targetPortalName = ""
 	end
 		return false
+end
+
+function targetPortalHasNoDest(targetPortal)
+  if targetPortal.destination_x == 0 and targetPortal.destination_x == 0 and targetPortal.destination_x == 0 then
+  	return true
+  end
+  return false
 end
 
 function OnEntityChangedWorld(Entity, World)
