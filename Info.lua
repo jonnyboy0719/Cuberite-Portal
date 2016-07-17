@@ -47,5 +47,11 @@ g_PluginInfo =
 			Handler = HandleListPortalDetails,
 			HelpString = "List config for individual portal",
 		},
+		["/pplayerdata"] =
+		{
+			Permission = "portal.info",
+			Handler = HandlePLayerDetails,
+			HelpString = "List Current player state [for debugging]",
+		},
 	},
 }

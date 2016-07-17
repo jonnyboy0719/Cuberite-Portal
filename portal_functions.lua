@@ -2,11 +2,11 @@ function HandleToggleCommand(Split, Player)
 	if (Player:HasPermission("portal.create") == true) then
 		local playerData = DATA.players[Player:GetName()]
 
-		if playerData.HasToolEnabled == 1 then
-			playerData.HasToolEnabled = 0
+		if playerData.HasToolEnabled == true then
+			playerData.HasToolEnabled = false
 			Player:SendMessage("Your wooden sword will now act as usual")
 		else
-			playerData.HasToolEnabled = 1
+			playerData.HasToolEnabled = true
 			Player:SendMessage("Your wooden sword will now select portal entrance zone")
 		end
 	end
@@ -141,6 +141,17 @@ function HandleListPortalDetails(Split, Player)
 	Player:SendMessage("point 1 = " .. point1.x .. ", " .. point1.y .. ", " .. point1.z)
 	Player:SendMessage("point 2 = " .. point2.x .. ", " .. point2.y .. ", " .. point2.z)
 	Player:SendMessage("--------------")
+	return true
+end
+
+function HandlePLayerDetails(Split, Player)
+	-- for debugging
+	local playerData = DATA.players[Player:GetName()]
+
+	Player:SendMessage("Current player data: ")
+	for k, v in pairs(playerData) do
+		Player:SendMessage(k .. ": " .. tostring(v))
+	end
 	return true
 end
 
