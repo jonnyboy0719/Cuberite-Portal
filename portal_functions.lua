@@ -28,15 +28,16 @@ function HandleMakeWarpCommand(Split, Player)
 
 					portalData.world = Player:GetWorld():GetName()
 					portalData.target = ""
-					portalData.portal_point1_x = point1.x
-					portalData.portal_point1_y = point1.y
-					portalData.portal_point1_z = point1.z
-					portalData.portal_point2_x = point2.x
-					portalData.portal_point2_y = point2.y
-					portalData.portal_point2_z = point2.z
+					portalData.point1_x = point1.x
+					portalData.point1_y = point1.y
+					portalData.point1_z = point1.z
+					portalData.point2_x = point2.x
+					portalData.point2_y = point2.y
+					portalData.point2_z = point2.z
 					portalData.destination_x = 0
 					portalData.destination_y = 0
 					portalData.destination_z = 0
+					portalData.disabled = false
 
 					playerData.point1 = nil
 					playerData.point2 = nil
@@ -130,17 +131,37 @@ function HandleListPortalDetails(Split, Player)
 	end
 
 	local destPoints = getPoints("destination", portalData)
-	local point1 = getPoints("portal_point1", portalData)
-	local point2 = getPoints("portal_point2", portalData)
+	local point1 = getPoints("point1", portalData)
+	local point2 = getPoints("point2", portalData)
 
 	Player:SendMessage("portal: " .. portalName)
 	Player:SendMessage("--------------")
+	Player:SendMessage("disabled = " .. tostring(portalData.disabled))
 	Player:SendMessage("target = " .. portalData.target)
 	Player:SendMessage("world = " .. portalData.world)
 	Player:SendMessage("dest = " .. destPoints.x .. ", " .. destPoints.y .. ", " .. destPoints.z)
 	Player:SendMessage("point 1 = " .. point1.x .. ", " .. point1.y .. ", " .. point1.z)
 	Player:SendMessage("point 2 = " .. point2.x .. ", " .. point2.y .. ", " .. point2.z)
 	Player:SendMessage("--------------")
+	return true
+end
+
+function HandleToggleDisablePortal(Split, Player)
+	local portal = Split[2]
+	local command = Split[1]
+	local portalData = DATA.portals[portal]
+
+	if portalData then
+		if command == "/pdisable" then
+			portalData.disabled = true
+			Player:SendMessage("portal " .. portal .. " disabled")
+		elseif command == "/penable" then
+			portalData.disabled = false
+			Player:SendMessage("portal " .. portal .. " Enabled")
+		end
+	else
+		Player:SendMessage("portal " .. portal .. " does not exist")	
+	end
 	return true
 end
 
@@ -155,26 +176,36 @@ function HandlePLayerDetails(Split, Player)
 	return true
 end
 
+function HandleToggleAllPortalsdisabled(Split, Player)
+  DATA.all_portals_disabled = not DATA.all_portals_disabled
+  local text = DATA.all_portals_disabled and "disabled" or "enabled"
+  Player:SendMessage(cChatColor.Red .. "All portals are now " .. text)
+  return true
+end
+
 function portalIniToTable(Portalini)
 	local PortalsData = {}
 	local warpNum = Portalini:GetNumKeys();
 	if warpNum > 0 then
 		for i=0, warpNum - 1 do
 			local portalName = Portalini:GetKeyName(i)
+			LOG("pname: " .. portalName)
 			PortalsData[portalName] = {}
 			local portalData = PortalsData[portalName]
 
 			portalData["world"] = Portalini:GetValue( portalName , "world")
 			portalData["target"] = Portalini:GetValue( portalName , "target")
-			portalData["portal_point1_x"] = Portalini:GetValueI( portalName , "portal_point1_x")
-			portalData["portal_point1_y"] = Portalini:GetValueI( portalName , "portal_point1_y")
-			portalData["portal_point1_z"] = Portalini:GetValueI( portalName , "portal_point1_z")
-			portalData["portal_point2_x"] = Portalini:GetValueI( portalName , "portal_point2_x")
-			portalData["portal_point2_y"] = Portalini:GetValueI( portalName , "portal_point2_y")
-			portalData["portal_point2_z"] = Portalini:GetValueI( portalName , "portal_point2_z")
+			portalData["point1_x"] = Portalini:GetValueI( portalName , "point1_x")
+			portalData["point1_y"] = Portalini:GetValueI( portalName , "point1_y")
+			portalData["point1_z"] = Portalini:GetValueI( portalName , "point1_z")
+			portalData["point2_x"] = Portalini:GetValueI( portalName , "point2_x")
+			portalData["point2_y"] = Portalini:GetValueI( portalName , "point2_y")
+			portalData["point2_z"] = Portalini:GetValueI( portalName , "point2_z")
 			portalData["destination_x"] = Portalini:GetValueI( portalName , "destination_x")
 			portalData["destination_y"] = Portalini:GetValueI( portalName , "destination_y")
 			portalData["destination_z"] = Portalini:GetValueI( portalName , "destination_z")
+			portalData["disabled"] = intToBool(Portalini:GetValueI( portalName , "disabled"))
+			
 		end
 	end
 
@@ -188,28 +219,30 @@ function portalDataToIni()
 		if ini:FindKey(key) then
 			 ini:SetValue( key , "world", portalData["world"])
 			 ini:SetValue( key , "target", portalData["target"])
-			 ini:SetValueI( key , "portal_point1_x", portalData["portal_point1_x"])
-			 ini:SetValueI( key , "portal_point1_y", portalData["portal_point1_y"])
-			 ini:SetValueI( key , "portal_point1_z", portalData["portal_point1_z"])
-			 ini:SetValueI( key , "portal_point2_x", portalData["portal_point2_x"])
-			 ini:SetValueI( key , "portal_point2_y", portalData["portal_point2_y"])
-			 ini:SetValueI( key , "portal_point2_z", portalData["portal_point2_z"])
+			 ini:SetValueI( key , "point1_x", portalData["point1_x"])
+			 ini:SetValueI( key , "point1_y", portalData["point1_y"])
+			 ini:SetValueI( key , "point1_z", portalData["point1_z"])
+			 ini:SetValueI( key , "point2_x", portalData["point2_x"])
+			 ini:SetValueI( key , "point2_y", portalData["point2_y"])
+			 ini:SetValueI( key , "point2_z", portalData["point2_z"])
 			 ini:SetValueI( key , "destination_x", portalData["destination_x"])
 			 ini:SetValueI( key , "destination_y", portalData["destination_y"])
 			 ini:SetValueI( key , "destination_z", portalData["destination_z"])
+			 ini:SetValueI( key , "disabled", boolToInt( portalData["disabled"]))
 		else
 			ini:AddKeyName(key)
 			ini:AddValue( key , "world", portalData["world"])
 			ini:AddValue( key , "target", portalData["target"])
-			ini:AddValueI( key , "portal_point1_x", portalData["portal_point1_x"])
-			ini:AddValueI( key , "portal_point1_y", portalData["portal_point1_y"])
-			ini:AddValueI( key , "portal_point1_z", portalData["portal_point1_z"])
-			ini:AddValueI( key , "portal_point2_x", portalData["portal_point2_x"])
-			ini:AddValueI( key , "portal_point2_y", portalData["portal_point2_y"])
-			ini:AddValueI( key , "portal_point2_z", portalData["portal_point2_z"])
+			ini:AddValueI( key , "point1_x", portalData["point1_x"])
+			ini:AddValueI( key , "point1_y", portalData["point1_y"])
+			ini:AddValueI( key , "point1_z", portalData["point1_z"])
+			ini:AddValueI( key , "point2_x", portalData["point2_x"])
+			ini:AddValueI( key , "point2_y", portalData["point2_y"])
+			ini:AddValueI( key , "point2_z", portalData["point2_z"])
 			ini:AddValueI( key , "destination_x", portalData["destination_x"])
 			ini:AddValueI( key , "destination_y", portalData["destination_y"])
 			ini:AddValueI( key , "destination_z", portalData["destination_z"])
+			ini:AddValueI( key , "disabled", boolToInt( portalData["disabled"]))
 		end
 	end
 
@@ -235,13 +268,13 @@ function playerInAPortal(Player)
 				local vector1 = Vector3i()
 				local vector2 = Vector3i()
 
-				vector1.x = v["portal_point1_x"]
-				vector1.y = v["portal_point1_y"]
-				vector1.z = v["portal_point1_z"]
+				vector1.x = v["point1_x"]
+				vector1.y = v["point1_y"]
+				vector1.z = v["point1_z"]
 
-				vector2.x = v["portal_point2_x"]
-				vector2.y = v["portal_point2_y"]
-				vector2.z = v["portal_point2_z"]
+				vector2.x = v["point2_x"]
+				vector2.y = v["point2_y"]
+				vector2.z = v["point2_z"]
 
 				_check_cuboid.p1 = vector1
 				_check_cuboid.p2 = vector2
@@ -260,6 +293,26 @@ function portalPointSelectMessage(num, x, y, z)
 	 cChatColor.LightGreen .. x .. cChatColor.White .. "," .. 
 	 cChatColor.LightGreen .. y .. cChatColor.White .. "," .. 
 	 cChatColor.LightGreen .. z .. cChatColor.White .. ")"
+end
+
+function boolToInt(val)
+	if type(val) == "boolean" then
+	 if val == false then
+			return 0
+		else 
+			return 1
+		end
+	end
+end
+
+function intToBool(val)
+	if type(val) == "number" then
+	 if val == 1 then
+			return true
+		else 
+			return false
+		end
+	end
 end
 
 function getPoints(prefix, data)

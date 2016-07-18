@@ -20,9 +20,9 @@ function get(table, key, default)
 	return default
 end
 
-function renderGuiForm(portalConfig, portalToEditName, path)
+function renderGuiForm(portalConfigs, portalToEditName, path)
 	local previewItems = ""
-	for portalName, config in pairs(portalConfig) do
+	for portalName, config in pairs(portalConfigs) do
 		previewItems = previewItems .. makePreviewItem(portalName, config)
 	end
 
@@ -34,10 +34,17 @@ function renderGuiForm(portalConfig, portalToEditName, path)
 		name = portalToEditName
 	end
 
+	local globalDisableMessage = DATA.all_portals_disabled and "Disable" or "Enable"
+
 	return [[ 
 		<style> ]]
 			.. CSS_STYLES .. [[
 		</style> ]] .. [[
+	  <form method="post" class="global-disable-form" >
+	    <input hidden name='disable' value='global_disable' />
+	    <span>Global portal lock </span>
+			<button type="submit">]] .. globalDisableMessage .. [[</button>
+	  </form>
 		<form class='table' id='portalForm' method="post" action="]] .. path .. [[">
 			<div class='block'>
 				<h3>Name</h3>
@@ -56,8 +63,8 @@ function renderGuiForm(portalConfig, portalToEditName, path)
 				<input name='target' type='text' value=']] .. get(editPortal, "target", "") .. [['/>
 			</div>
 
-			]] .. makePointBlock("Portal Point 1", "portal_point1", editPortal) .. [[
-			]] .. makePointBlock("Portal Point 2", "portal_point2", editPortal) .. [[
+			]] .. makePointBlock("Portal Point 1", "point1", editPortal) .. [[
+			]] .. makePointBlock("Portal Point 2", "point2", editPortal) .. [[
 			]] .. makePointBlock("Portal Destination Point", "destination", editPortal) .. [[
 
 			<button class='submit-btn' type='submit'>]] .. buttonText.. [[</button>
@@ -90,15 +97,17 @@ function makePointBlock(title, prefix, editPortal)
 end
 
 function makePreviewItem(portalName, portalConfig)
-	local p1 = getPoints('portal_point1', portalConfig)
-	local p2 = getPoints('portal_point2', portalConfig)
+	local p1 = getPoints('point1', portalConfig)
+	local p2 = getPoints('point2', portalConfig)
 	local dest = getPoints('destination', portalConfig)
+	local disableText = portalConfig.disabled and "enable" or "disable"
 	return [[
 	<div class='preview-item'>
 		<div class='preview-item__left'>
 			<h3 class='preview-item__name'>]] .. portalName .. [[</h3>
 			<p>world: ]] .. portalConfig.world .. [[</p>
 			<p>target: ]] .. portalConfig.target .. [[</p>
+			<p>disabled: ]] .. tostring(portalConfig.disabled) .. [[</p>
 		</div>
 		<div class='preview-item__right'>
 			]] .. previewPointBox("Point 1", p1.x, p1.y, p1.z) .. [[
@@ -111,6 +120,10 @@ function makePreviewItem(portalName, portalConfig)
 			<form method="post">
 				<input hidden name='del' value=']] .. portalName .. [[' />
 				<button class="preview-item__del">Del</button>
+			</form>
+			<form method="post">
+				<input hidden name='disable' value=']] .. portalName .. [[' />
+				<button class="preview-item__disable">]] .. disableText .. [[</button>
 			</form>
 		</div>
 	</div>

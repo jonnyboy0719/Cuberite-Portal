@@ -53,5 +53,23 @@ g_PluginInfo =
 			Handler = HandlePLayerDetails,
 			HelpString = "List Current player state [for debugging]",
 		},
+		["/pdisable"] =
+		{
+			Permission = "portal.create",
+			Handler = HandleToggleDisablePortal,
+			HelpString = "Disables a portal",
+		},
+		["/penable"] =
+		{
+			Permission = "portal.create",
+			Handler = HandleToggleDisablePortal,
+			HelpString = "Enbales a portal",
+		},
+		["/pglobaltoggle"] =
+		{
+			Permission = "portal.create",
+			Handler = HandleToggleAllPortalsdisabled,
+			HelpString = "Toggles global portal disable",
+		},
 	},
-}
+} 

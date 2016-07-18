@@ -4,6 +4,11 @@ function HandleRequest_Portals(Request)
 		local params = Request.PostParams
 		local name = params['name']
 		local del = params['del']
+		local disable = params['disable']
+
+		if disable then
+			toggleDisable(disable)
+		end
 
 		if name then
 			saveNewPortal(name, params)
@@ -34,6 +39,14 @@ function delPortal(portalName)
 		if DATA.portals[portalName] then
 			DATA.portals[portalName] = nil
 		end
+end
+
+function toggleDisable(portalName)
+	if portalName == "global_disable" then
+		DATA.all_portals_disabled = not DATA.all_portals_disabled
+	elseif DATA.portals[portalName] then
+		DATA.portals[portalName].disabled = not DATA.portals[portalName].disabled
+	end 
 end
 
 function getQuery(url)

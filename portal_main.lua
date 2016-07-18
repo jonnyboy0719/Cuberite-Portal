@@ -8,12 +8,15 @@ PLAYER_STATES = {
 	["WAITING"] = "WAITING",
 	["TELEPORTING"] = "TELEPORTING",
 	["PORTAL_NOT_SETUP"] = "PORTAL_NOT_SETUP",
+	["IN_DISABLED_PORTAL"] = "IN_DISABLED_PORTAL",
 }
 
 DATA = {}
 DATA.players = {}
+DATA.portals = {}
+DATA.all_portals_disabled = false
 
-PORTALS_INI_NAME = "portals_portals.ini"
+PORTALS_INI_NAME = "portals.ini"
 
 PLUGIN_PATH = ''
 DATA.portalIniFile = cIniFile()
@@ -90,15 +93,25 @@ function OnPlayerMoving(Player)
 	if (portalName) then
 		local portalData = DATA.portals[portalName]
 		local targetPortalName = portalData["target"]
+		-- check if we already set state to PORTAL_NOT_SETUP or IN_DISABLED_PORTAL
+		if playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP or playerData.state == PLAYER_STATES.IN_DISABLED_PORTAL or DATA.all_portals_disabled then
+			return false
+		end
 
-		-- check if we already set state to PORTAL_NOT_SETUP
-		if playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP then
+		if portalData.disabled == true then
+			Player:SendMessage(cChatColor.Red .. "This portal is disabled")
+			playerData.state = PLAYER_STATES.IN_DISABLED_PORTAL
 			return false
 		end
 
 		-- check if the portal is not set up
-		if targetPortalName == "" or targetPortalName == nil then
-			Player:SendMessage(cChatColor.Red .. "This portal doesn't lead anywhere!")
+		if targetPortalName == "" or targetPortalName == nil or targetPortalHasNoDest(DATA.portals[targetPortalName]) then
+			if targetPortalHasNoDest(DATA.portals[targetPortalName]) then
+				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortalName .. "does not have a destination point set")
+			else
+				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortalName .. "doesn't lead anywhere!")	
+			end
+			
 			playerData.state = PLAYER_STATES.PORTAL_NOT_SETUP
 			return false
 		end
@@ -120,7 +133,7 @@ function OnPlayerMoving(Player)
 		end
 
 	else
-		if playerData.state ~= PLAYER_STATES.NOT_IN_PORTAL and playerData.state ~= PLAYER_STATES.TELEPORTING then
+		if playerData.state == PLAYER_STATES.WAITING then
 			Player:SendMessage(cChatColor.Red .. "You have left teleportation zone")
 		end
 
@@ -128,6 +141,13 @@ function OnPlayerMoving(Player)
 		playerData.targetPortalName = ""
 	end
 		return false
+end
+
+function targetPortalHasNoDest(targetPortal)
+  if targetPortal.destination_x == 0 and targetPortal.destination_x == 0 and targetPortal.destination_x == 0 then
+  	return true
+  end
+  return false
 end
 
 function OnEntityChangedWorld(Entity, World)
