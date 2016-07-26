@@ -107,7 +107,7 @@ function OnPlayerMoving(Player)
 		-- check if the portal is not set up
 		if targetPortalName == "" or targetPortalName == nil or targetPortalHasNoDest(DATA.portals[targetPortalName]) then
 			if targetPortalHasNoDest(DATA.portals[targetPortalName]) then
-				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortalName .. "does not have a destination point set")
+				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortalName .. " does not have a destination point set")
 			else
 				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortalName .. "doesn't lead anywhere!")	
 			end
@@ -144,7 +144,7 @@ function OnPlayerMoving(Player)
 end
 
 function targetPortalHasNoDest(targetPortal)
-  if targetPortal.destination_x == 0 and targetPortal.destination_x == 0 and targetPortal.destination_x == 0 then
+  if targetPortal ~= nil and (targetPortal.destination_x == 0 and targetPortal.destination_x == 0 and targetPortal.destination_x == 0) then
   	return true
   end
   return false
