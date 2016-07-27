@@ -31,7 +31,7 @@ function Initialize(Plugin)
 	dofile(cPluginManager:GetPluginsPath() .. "/InfoReg.lua")
 
 	Plugin:SetName(g_PluginInfo.Name)
-	Plugin:SetVersion(2)
+	Plugin:SetVersion(3)
 
 	PluginManager = cRoot:Get():GetPluginManager()
 	cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_MOVING, OnPlayerMoving)
