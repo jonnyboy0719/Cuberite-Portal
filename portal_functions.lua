@@ -39,9 +39,6 @@ function HandleMakeWarpCommand(Split, Player)
 					portalData.destination_z = 0
 					portalData.disabled = false
 
-					playerData.point1 = nil
-					playerData.point2 = nil
-
 					Player:SendMessage('Warp "' .. cChatColor.LightBlue .. portalName .. cChatColor.White .. '" created!')
 				else
 					Player:SendMessage("The portal volume can't be empty!")
@@ -289,10 +286,10 @@ function playerInAPortal(Player)
 end
 
 function portalPointSelectMessage(num, x, y, z)
- return num .. " portal entrance volume point selected at: (" .. 
-	 cChatColor.LightGreen .. x .. cChatColor.White .. "," .. 
-	 cChatColor.LightGreen .. y .. cChatColor.White .. "," .. 
-	 cChatColor.LightGreen .. z .. cChatColor.White .. ")"
+ return num .. " (" .. 
+	 cChatColor.LightGreen .. x .. cChatColor.White .. " , " .. 
+	 cChatColor.LightGreen .. y .. cChatColor.White .. " , " .. 
+	 cChatColor.LightGreen .. z .. cChatColor.White .. " )"
 end
 
 function boolToInt(val)

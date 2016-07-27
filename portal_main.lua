@@ -118,7 +118,7 @@ function OnPlayerMoving(Player)
 
 		-- check if player just entered
 		if (playerData.state == PLAYER_STATES.NOT_IN_PORTAL) then
-			Player:SendMessage(cChatColor.LightBlue .. "Stand still for a few seconds for teleportation")
+			Player:SendMessage(cChatColor.LightBlue .. "portal: " .. portalName .. "Stand still for a few seconds for teleportation")
 			playerData.portal_timer = GetTime() + PORTAL_ACTIVATION_TIME
 			playerData.state = PLAYER_STATES.WAITING
 			playerData.targetPortalName = targetPortalName
@@ -177,31 +177,32 @@ function OnPlayerBreakingBlock(Player, IN_x, IN_y, IN_z, BlockFace, Status, OldB
 
 	if (Player:HasPermission("portal.create") == true and playerData["HasToolEnabled"] == true) then
 		if playerData.isSelectingPoint2 then
-			if (IN_x ~= -1 and IN_y ~= 255 and IN_z ~= -1) and ItemToString(Player:GetEquippedItem()) == "woodsword" then
-
-					if (playerData.point2 == nil) then
-						playerData.point2 = Vector3i()
+			if ItemToString(Player:GetEquippedItem()) == "woodsword" then
+					if (playerData.point1.x == IN_x and playerData.point1.y == IN_y and playerData.point1.z == IN_z) then
+						-- on slow connections the server can get two of these events when the player clicks which means point1/point2
+						-- get selected right after one another and effectively makes it impossible to select point2
+						return true
 					end
 
 					playerData.point2.x = IN_x
 					playerData.point2.y = IN_y
 					playerData.point2.z = IN_z
-					Player:SendMessage(portalPointSelectMessage("Second", IN_x, IN_y, IN_z))
+					Player:SendMessage(portalPointSelectMessage("Point 2", IN_x, IN_y, IN_z))
 					playerData.isSelectingPoint2 = false
 					return true
 			end
 		else
 			if (ItemToString(Player:GetEquippedItem()) == "woodsword") then
-				if (playerData.point1 == nil) then
-				-- debug
-				--  Player:SendMessage(IN_x);
-					playerData.point1 = Vector3i()
+				if (playerData.point2.x == IN_x and playerData.point2.y == IN_y and playerData.point2.z == IN_z) then
+					-- see note above. this is used for the second playerbreaking event when selecting the point2
+					return true
 				end
+
 				playerData.point1.x = IN_x
 				playerData.point1.y = IN_y
 				playerData.point1.z = IN_z
-				Player:SendMessage(portalPointSelectMessage("First", IN_x, IN_y, IN_z))
-				Player:SendMessage(cChatColor.LightBlue .. "Now select the second portal entrance volume point.")
+				Player:SendMessage(portalPointSelectMessage("Point 1", IN_x, IN_y, IN_z))
+				Player:SendMessage(cChatColor.LightBlue .. "Now select point 2.")
 				playerData.isSelectingPoint2 = true
 				return true
 			end
@@ -220,6 +221,8 @@ function onPlayerJoin(Player)
 			HasToolEnabled = false,
 			HasTeleportedToWorld = false,
 			isSelectingPoint2 = false,
+			point2 = Vector3i(),
+			point1 = Vector3i(),
 			state = PLAYER_STATES.NOT_IN_PORTAL,
 		}
 	end
