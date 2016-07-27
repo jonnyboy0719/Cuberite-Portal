@@ -13,13 +13,25 @@ g_PluginInfo =
 			Permission = "portal.create",
 			Handler = HandleToggleCommand,
 			HelpString = "Switches to volume selection mode",
+			ParameterCombinations = {
+			  {
+			  	Params = "",
+			  	Help = "toggles the selection mode",
+				}
+			},
 		},
 
-		["/pinit"] =
+		["/pcreate"] =
 		{
 			Permission = "portal.create",
 			Handler = HandleMakeWarpCommand,
 			HelpString = "Creates warp point with given name",
+			ParameterCombinations = {
+			  {
+			  	Params = "<portalName>",
+			  	Help = "portal called <portalName> gets created if it doesn't exist",
+				}
+			},
 		},
 
 		["/pconnect"] =
@@ -27,49 +39,81 @@ g_PluginInfo =
 			Permission = "portal.create",
 			Handler = HandleMakeEnterCommand,
 			HelpString = "Connects 2 portals together",
+			ParameterCombinations = {
+			  {
+			  	Params = "<portalName1> <portalName2>",
+			  	Help = "portalName1 gets connected to PortalName2",
+				}
+			},
 		},
 
 		["/pdest"] =
 		{
 			Permission = "portal.create",
 			Handler = HandleMakeDestinationCommand,
-			HelpString = "Create the destination for a portal ID",
+			HelpString = "Create the destination for a portal",
+			ParameterCombinations = {
+			  {
+			  	Params = "<portalName>",
+			  	Help = "portal destination set to your position",
+				}
+			},
 		},
-		["/plist"] =
+		["/pinfo"] =
 		{
 			Permission = "portal.info",
-			Handler = HandleListPortals,
-			HelpString = "List the created portals",
+			Handler = HandleInfoCmd,
+			HelpString = "lists portals, or details for portal/player",
+			ParameterCombinations = {
+			  {
+				  Params = "",
+				  Help = "Lists out all portals with connections",
+				},
+			  {
+				  Params = "<portalName>",
+				  Help = "Shows individual portal config",
+				},
+			  {
+				  Params = "<playerName>",
+				  Help = "Shows current plugin state for a player",
+				},
+			  {
+				  Params = "me",
+				  Help = "Shows current plugin state for current player",
+				},
+			},
 		},
-		["/pdetail"] =
+		["/pmanage"] =
 		{
-			Permission = "portal.info",
-			Handler = HandleListPortalDetails,
-			HelpString = "List config for individual portal",
+			Permission = "portal.manage",
+			Handler = handleManageCmd,
+			HelpString = "enable/disable individual portals or all at once",
+			ParameterCombinations = {
+				{
+					Params = "enable/disable <portalName>",
+					Help = "Enable or disable a portal",
+				},
+				{
+					Params = "enable/disable all",
+					Help = "Enable or disable all portals",
+				},
+			},
 		},
-		["/pplayerdata"] =
+		["/phelp"] =
 		{
-			Permission = "portal.info",
-			Handler = HandlePLayerDetails,
-			HelpString = "List Current player state [for debugging]",
-		},
-		["/pdisable"] =
-		{
-			Permission = "portal.create",
-			Handler = HandleToggleDisablePortal,
-			HelpString = "Disables a portal",
-		},
-		["/penable"] =
-		{
-			Permission = "portal.create",
-			Handler = HandleToggleDisablePortal,
-			HelpString = "Enbales a portal",
-		},
-		["/pglobaltoggle"] =
-		{
-			Permission = "portal.create",
-			Handler = HandleToggleAllPortalsdisabled,
-			HelpString = "Toggles global portal disable",
+		  Permission = "",
+		  Handler = HandleHelpCmd,
+		  HelpString = "Prints available commands for plugin or details about a command",
+			ParameterCombinations = {
+			  {
+			  	Params = "",
+			  	Help = "prints all commands",
+				},
+			  {
+			  	Params = "<commandName>",
+			  	Help = "prints command help",
+				},
+			},
 		},
 	},
 } 

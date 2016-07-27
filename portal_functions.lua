@@ -105,6 +105,62 @@ function HandleMakeEnterCommand(Split, Player)
 	return true
 end
 
+function findKey(table, val)
+	if (not table or not val) then return false end
+	for k, v in pairs(table) do
+		if k == val then return true end
+	end
+	return false
+end
+
+function HandleHelpCmd(Split, Player)
+	if #Split == 1 then
+		Player:SendMessage("Valid commands:")
+		Player:SendMessage("---------------")
+		for k, v in pairs(g_PluginInfo.Commands) do
+			Player:SendMessage(k)	
+		end
+		return true
+	end
+
+	local command = "/" .. Split[2]
+	if g_PluginInfo.Commands[command] ~= nil then
+		local commandConfig = g_PluginInfo.Commands[command]
+		Player:SendMessage("---------------")
+		Player:SendMessage("Command: " .. command)
+		Player:SendMessage(commandConfig.HelpString)
+		if commandConfig.ParameterCombinations ~= nil then
+			Player:SendMessage("valid argument combinations:")
+			for i, v in ipairs(commandConfig.ParameterCombinations) do
+				local params = v.Params ~= "" and v.Params or "no args"
+				Player:SendMessage(cChatColor.LightBlue .. "params: " .. 
+					cChatColor.LightGreen .. params ..
+					cChatColor.LightBlue .. " " .. v.Help)
+			end
+		end
+		Player:SendMessage("---------------")
+	else
+		Player:SendMessage("Must provide valid command name")	
+	end
+	return true
+end
+
+function HandleInfoCmd(Split, Player)
+	local arg = Split[2]
+	if not arg then
+		HandleListPortals(Split, Player)
+		return true
+	elseif findKey(DATA.portals, arg) then
+		HandleListPortalDetails(Split, Player)
+		return true
+	elseif (findKey(DATA.players, arg) or arg == "me") then
+		HandlePLayerDetails(Split, Player)	
+		return true
+	end
+	Player:SendMessage(cChatColor.Red .. "you must supply a valid portal/player name")
+	return true
+end
+
 function HandleListPortals(Split, Player)
 	Player:SendMessage("name -> target")
 	Player:SendMessage("--------------")
@@ -116,16 +172,7 @@ end
 
 function HandleListPortalDetails(Split, Player)
 	local portalName = Split[2]
-	if not portalName then
-		Player:SendMessage(cChatColor.Red .. "you must supply a portal name")
-		return true
-	end
-
 	local portalData = DATA.portals[portalName]
-	if not portalData then
-		Player:SendMessage(cChatColor.Red .. "portal " .. portalName .. "Does not exist")  
-		return true
-	end
 
 	local destPoints = getPoints("destination", portalData)
 	local point1 = getPoints("point1", portalData)
@@ -143,16 +190,37 @@ function HandleListPortalDetails(Split, Player)
 	return true
 end
 
-function HandleToggleDisablePortal(Split, Player)
-	local portal = Split[2]
-	local command = Split[1]
+function handleManageCmd(Split, Player)
+	local command = Split[2]
+	local portal = Split[3]
+
+	if portal == nil then
+		Player:SendMessage("you must supply portal name or specify 'all'")
+		return true
+	end
+
+	if command ~= "enable" and command ~= "disable" then
+		Player:SendMessage("Valid sub-commands are: enable, disable")
+		return true
+	end
+
+	if portal == "all" then
+		HandleToggleAllPortalsdisabled(command, Player)
+		return true
+	end
+
+	HandleToggleDisablePortal(command, portal, Player)
+	return true
+end
+
+function HandleToggleDisablePortal(command, portal, Player)
 	local portalData = DATA.portals[portal]
 
 	if portalData then
-		if command == "/pdisable" then
+		if command == "disable" then
 			portalData.disabled = true
 			Player:SendMessage("portal " .. portal .. " disabled")
-		elseif command == "/penable" then
+		elseif command == "enable" then
 			portalData.disabled = false
 			Player:SendMessage("portal " .. portal .. " Enabled")
 		end
@@ -164,7 +232,11 @@ end
 
 function HandlePLayerDetails(Split, Player)
 	-- for debugging
-	local playerData = DATA.players[Player:GetName()]
+	local playerName = Split[2]
+	if Split[2] == "me" then
+		playerName = Player:GetName()
+	end
+	local playerData = DATA.players[playerName]
 
 	Player:SendMessage("Current player data: ")
 	for k, v in pairs(playerData) do
@@ -173,10 +245,16 @@ function HandlePLayerDetails(Split, Player)
 	return true
 end
 
-function HandleToggleAllPortalsdisabled(Split, Player)
-  DATA.all_portals_disabled = not DATA.all_portals_disabled
-  local text = DATA.all_portals_disabled and "disabled" or "enabled"
-  Player:SendMessage(cChatColor.Red .. "All portals are now " .. text)
+function HandleToggleAllPortalsdisabled(command, Player)
+	local color = cChatColor.Red
+	if command == "enable" then
+		DATA.all_portals_disabled = false
+		color = cChatColor.LightBlue
+	elseif command == "disable" then
+		DATA.all_portals_disabled = true
+	end
+
+  Player:SendMessage(color .. "All portals are now " .. command .. "d")
   return true
 end
 
@@ -186,7 +264,6 @@ function portalIniToTable(Portalini)
 	if warpNum > 0 then
 		for i=0, warpNum - 1 do
 			local portalName = Portalini:GetKeyName(i)
-			LOG("pname: " .. portalName)
 			PortalsData[portalName] = {}
 			local portalData = PortalsData[portalName]
 

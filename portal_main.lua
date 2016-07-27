@@ -118,7 +118,7 @@ function OnPlayerMoving(Player)
 
 		-- check if player just entered
 		if (playerData.state == PLAYER_STATES.NOT_IN_PORTAL) then
-			Player:SendMessage(cChatColor.LightBlue .. "portal: " .. portalName .. "Stand still for a few seconds for teleportation")
+			Player:SendMessage(cChatColor.LightBlue .. "portal: " .. portalName .. ", Stand still for a few seconds for teleportation")
 			playerData.portal_timer = GetTime() + PORTAL_ACTIVATION_TIME
 			playerData.state = PLAYER_STATES.WAITING
 			playerData.targetPortalName = targetPortalName
