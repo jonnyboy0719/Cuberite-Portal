@@ -30,7 +30,11 @@ function saveNewPortal(name, fields)
 
 	for key, val in pairs(fields) do
 		if key ~= "name" then
-			DATA.portals[name][key] = val
+			if key == 'target' then
+				DATA.portals[name][key] = StringSplit(val, ",")
+			else
+				DATA.portals[name][key] = val
+			end
 		end
 	end
 end

@@ -15,6 +15,9 @@ end
 
 function get(table, key, default)
 	if table ~= nil and table[key] ~= nil then
+		if type(table[key]) == 'table' then
+			return arrayTableToString(table[key])
+		end
 		return table[key]
 	end
 	return default
@@ -106,7 +109,7 @@ function makePreviewItem(portalName, portalConfig)
 		<div class='preview-item__left'>
 			<h3 class='preview-item__name'>]] .. portalName .. [[</h3>
 			<p>world: ]] .. portalConfig.world .. [[</p>
-			<p>target: ]] .. portalConfig.target .. [[</p>
+			<p>target: ]] .. arrayTableToString(portalConfig.target)  .. [[</p>
 			<p>disabled: ]] .. tostring(portalConfig.disabled) .. [[</p>
 		</div>
 		<div class='preview-item__right'>

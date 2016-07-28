@@ -27,7 +27,7 @@ function HandleMakeWarpCommand(Split, Player)
 					local portalData = DATA.portals[portalName]
 
 					portalData.world = Player:GetWorld():GetName()
-					portalData.target = ""
+					portalData.target = {}
 					portalData.point1_x = point1.x
 					portalData.point1_y = point1.y
 					portalData.point1_z = point1.z
@@ -56,51 +56,57 @@ function HandleMakeWarpCommand(Split, Player)
 end
 
 function HandleMakeDestinationCommand(Split, Player)
-	if (Player:HasPermission("portal.create") == true) then
-		if (#Split == 2) then
-			local portalName = Split[2]
-			local portalData = DATA.portals[portalName]
-			if portalData ~= nil then
-				portalData.destination_x = Player:GetPosX()
-				portalData.destination_y = Player:GetPosY()
-				portalData.destination_z = Player:GetPosZ()
+	if (#Split == 2) then
+		local portalName = Split[2]
+		local portalData = DATA.portals[portalName]
+		if portalData ~= nil then
+			portalData.destination_x = Player:GetPosX()
+			portalData.destination_y = Player:GetPosY()
+			portalData.destination_z = Player:GetPosZ()
 
-				Player:SendMessage('Destination for Portal ID "' .. cChatColor.LightBlue .. portalName .. cChatColor.White .. '" created!')
-			else
-				Player:SendMessage('The id "' .. cChatColor.LightBlue .. portalName .. cChatColor.White .. '" doesn\'t exist!')
-			end
+			Player:SendMessage('Destination for Portal ID "' .. cChatColor.LightBlue .. portalName .. cChatColor.White .. '" created!')
 		else
-			Player:SendMessage("Usage: "..Split[1].." <id>")
+			Player:SendMessage('The id "' .. cChatColor.LightBlue .. portalName .. cChatColor.White .. '" doesn\'t exist!')
 		end
 	else
-		Player:SendMessage("You're not allowed to create destinations")
+		Player:SendMessage("Usage: "..Split[1].." <id>")
 	end
 	return true
 end
 
-function HandleMakeEnterCommand(Split, Player)
-	if (Player:HasPermission("portal.create") == true) then
-		if (#Split == 3) then
-			local portal1Name = Split[2]
-			local portal2Name = Split[3]
+function HandleConnectCmd(Split, Player)
+	if (#Split == 3) then
+		local portal1Name = Split[2]
+		local portal2Name = Split[3]
 
-			if portal1Name ~= "" then
-				local portalData = DATA.portals[portal1Name]
-				if not DATA.portals[portal2Name] then
-					Player:SendMessage('The id "' .. cChatColor.LightBlue .. portal2Name .. cChatColor.White .. '" doesn\'t exist!')
-					return true
-				end
+		if portal1Name ~= "" then
+			local portalData = DATA.portals[portal1Name]
+			if not DATA.portals[portal2Name] then
+				Player:SendMessage('The id "' .. cChatColor.LightBlue .. portal2Name ..
+					cChatColor.White .. '" doesn\'t exist!')
+				return true
+			end
+			if not portalData then
+				Player:SendMessage('The id "' .. cChatColor.LightBlue ..
+					portal1Name .. cChatColor.White .. '" doesn\'t exist!')
+				return true
+			end
 
-				portalData.target = portal2Name
-				Player:SendMessage('Entrance from "' .. cChatColor.LightBlue .. portal1Name .. cChatColor.White .. '" to "' .. cChatColor.LightBlue .. portal2Name .. cChatColor.White .. '" created!')
-			else
-				Player:SendMessage('You can\'t set the target as itself!')
+			if includes(portalData.target, portal2Name) then -- remove from targets
+				local index = find(portalData.target, portal2Name)
+				table.remove(portalData.target, index)
+				Player:SendMessage(portal2Name .. " removed from targets")
+			else -- add to targets
+				table.insert(portalData.target, portal2Name)
+				Player:SendMessage('Entrance from "' .. cChatColor.LightBlue ..
+					portal1Name .. cChatColor.White .. '" to "' ..
+					  cChatColor.LightBlue .. portal2Name .. cChatColor.White .. '" created!')
 			end
 		else
-			Player:SendMessage("Usage: "..Split[1].." <id> <target_id>")
+			Player:SendMessage('You can\'t set the target as itself!')
 		end
 	else
-		Player:SendMessage("You're not allowed to connect 2 portal destinations")
+		Player:SendMessage("Usage: "..Split[1].." <id> <target_id>")
 	end
 	return true
 end
@@ -134,8 +140,8 @@ function HandleHelpCmd(Split, Player)
 			for i, v in ipairs(commandConfig.ParameterCombinations) do
 				local params = v.Params ~= "" and v.Params or "no args"
 				Player:SendMessage(cChatColor.LightBlue .. "params: " .. 
-					cChatColor.LightGreen .. params ..
-					cChatColor.LightBlue .. " " .. v.Help)
+					cChatColor.LightGreen .. params)
+				Player:SendMessage(v.Help)
 			end
 		end
 		Player:SendMessage("---------------")
@@ -165,7 +171,7 @@ function HandleListPortals(Split, Player)
 	Player:SendMessage("name -> target")
 	Player:SendMessage("--------------")
 	for k, v in pairs(DATA.portals) do
-		Player:SendMessage(k .. " -> " .. DATA.portals[k].target)
+		Player:SendMessage(k .. " -> " .. arrayTableToString(DATA.portals[k].target))
 	end
 	return true
 end
@@ -181,7 +187,7 @@ function HandleListPortalDetails(Split, Player)
 	Player:SendMessage("portal: " .. portalName)
 	Player:SendMessage("--------------")
 	Player:SendMessage("disabled = " .. tostring(portalData.disabled))
-	Player:SendMessage("target = " .. portalData.target)
+	Player:SendMessage("target = " .. arrayTableToString(portalData.target))
 	Player:SendMessage("world = " .. portalData.world)
 	Player:SendMessage("dest = " .. destPoints.x .. ", " .. destPoints.y .. ", " .. destPoints.z)
 	Player:SendMessage("point 1 = " .. point1.x .. ", " .. point1.y .. ", " .. point1.z)
@@ -258,6 +264,36 @@ function HandleToggleAllPortalsdisabled(command, Player)
   return true
 end
 
+function HandleTeleport(Split, Player)
+	local portalName = playerInAPortal(Player)
+	if portalName then
+		local currentPortal = DATA.portals[portalName]
+		local targetName = Split[2]
+		if targetName == nil then
+			Player:SendMessage("portal option not provided")
+			return true
+		end
+
+		if not includes(currentPortal.target, targetName) then
+			Player:SendMessage("Not a valid option.")
+			Player:SendMessage("Choose from: " .. arrayTableToString(currentPortal.target))
+			return true
+		end
+
+		if targetPortalHasNoDest(DATA.portals[targetName]) then
+			Player:SendMessage(cChatColor.Red .. targetName .. " Does not have a destination set")
+			return true
+		end
+
+		local playerName = Player:GetName()
+		local playerData = DATA.players[playerName]
+		playerData.targetPortalName = targetName
+		playerData.state = PLAYER_STATES.TELEPORTING
+		teleportPlayer(Player)  -- !!!!!!!! need to pass in the target portal here
+	end
+	return true
+end
+
 function portalIniToTable(Portalini)
 	local PortalsData = {}
 	local warpNum = Portalini:GetNumKeys();
@@ -268,7 +304,7 @@ function portalIniToTable(Portalini)
 			local portalData = PortalsData[portalName]
 
 			portalData["world"] = Portalini:GetValue( portalName , "world")
-			portalData["target"] = Portalini:GetValue( portalName , "target")
+			portalData["target"] = StringSplit(Portalini:GetValue( portalName , "target"), ",")
 			portalData["point1_x"] = Portalini:GetValueI( portalName , "point1_x")
 			portalData["point1_y"] = Portalini:GetValueI( portalName , "point1_y")
 			portalData["point1_z"] = Portalini:GetValueI( portalName , "point1_z")
@@ -292,7 +328,7 @@ function portalDataToIni()
 		local portalData = DATA.portals[key]
 		if ini:FindKey(key) then
 			 ini:SetValue( key , "world", portalData["world"])
-			 ini:SetValue( key , "target", portalData["target"])
+			 ini:SetValue( key , "target", arrayTableToString(portalData["target"]))
 			 ini:SetValueI( key , "point1_x", portalData["point1_x"])
 			 ini:SetValueI( key , "point1_y", portalData["point1_y"])
 			 ini:SetValueI( key , "point1_z", portalData["point1_z"])
@@ -306,7 +342,7 @@ function portalDataToIni()
 		else
 			ini:AddKeyName(key)
 			ini:AddValue( key , "world", portalData["world"])
-			ini:AddValue( key , "target", portalData["target"])
+			ini:AddValue( key , "target", arrayTableToString(portalData["target"]))
 			ini:AddValueI( key , "point1_x", portalData["point1_x"])
 			ini:AddValueI( key , "point1_y", portalData["point1_y"])
 			ini:AddValueI( key , "point1_z", portalData["point1_z"])
@@ -387,6 +423,39 @@ function intToBool(val)
 			return false
 		end
 	end
+end
+
+function arrayTableToString(table)
+	local string = ""
+	for i, v in ipairs(table) do
+		local newString = v
+		if i ~= #table then
+			newString = newString .. ","
+		end
+		string = string .. newString
+	end
+
+	return string
+end
+
+function includes(table, val)
+	-- check if key exists in array like table
+	for i, v in ipairs(table) do
+		if v == val then
+			return true
+		end
+	end
+	return false
+end
+
+function find(table, val)
+	-- return index of item in array like table
+	for i, v in ipairs(table) do
+		if v == val then
+			return i
+		end
+	end
+	return 0
 end
 
 function getPoints(prefix, data)

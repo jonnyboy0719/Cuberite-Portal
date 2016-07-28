@@ -37,12 +37,12 @@ g_PluginInfo =
 		["/pconnect"] =
 		{
 			Permission = "portal.create",
-			Handler = HandleMakeEnterCommand,
+			Handler = HandleConnectCmd,
 			HelpString = "Connects 2 portals together",
 			ParameterCombinations = {
 			  {
 			  	Params = "<portalName1> <portalName2>",
-			  	Help = "portalName1 gets connected to PortalName2",
+			  	Help = "portalName1 gets connected to PortalName2. If portalName2 is already a target of portalName1 it is removed",
 				}
 			},
 		},
@@ -97,6 +97,18 @@ g_PluginInfo =
 					Params = "enable/disable all",
 					Help = "Enable or disable all portals",
 				},
+			},
+		},
+		["/pteleport"] = 
+		{
+			Permission = "",
+			Handler = HandleTeleport,
+			HelpString = "teleports the user when they are in a teleport hub",
+			ParameterCombinations = {
+			  {
+			  	Params = "portalName",
+			  	Help = "",
+			  },
 			},
 		},
 		["/phelp"] =

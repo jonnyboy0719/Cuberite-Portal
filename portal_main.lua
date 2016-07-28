@@ -9,6 +9,7 @@ PLAYER_STATES = {
 	["TELEPORTING"] = "TELEPORTING",
 	["PORTAL_NOT_SETUP"] = "PORTAL_NOT_SETUP",
 	["IN_DISABLED_PORTAL"] = "IN_DISABLED_PORTAL",
+	["SELECTING_DEST"] = "SELECTING_DEST",
 }
 
 DATA = {}
@@ -73,8 +74,10 @@ function OnDisable()
 	LOG(PLUGIN:GetName() .. " v" .. g_PluginInfo.Version .. " is shutting down...")
 end
 
-function teleportPlayer(Player, playerData)
+function teleportPlayer(Player)
+	local playerData = DATA.players[Player:GetName()]
 	local portalData = DATA.portals[playerData.targetPortalName]
+
 	if (Player:GetWorld():GetName() ~= portalData["world"]) then
 		playerData.HasTeleportedToWorld = true
 		Player:MoveToWorld(portalData["world"])
@@ -92,36 +95,49 @@ function OnPlayerMoving(Player)
 
 	if (portalName) then
 		local portalData = DATA.portals[portalName]
-		local targetPortalName = portalData["target"]
+		local targetPortals = portalData.target
 		-- check if we already set state to PORTAL_NOT_SETUP or IN_DISABLED_PORTAL
-		if playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP or playerData.state == PLAYER_STATES.IN_DISABLED_PORTAL or DATA.all_portals_disabled then
+		if (playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP or
+			playerData.state == PLAYER_STATES.IN_DISABLED_PORTAL or 
+			DATA.all_portals_disabled or 
+			playerData.state == PLAYER_STATES.SELECTING_DEST) then
 			return false
 		end
 
 		if portalData.disabled == true then
-			Player:SendMessage(cChatColor.Red .. "This portal is disabled")
+			Player:SendMessage(cChatColor.Red .. "portal: " .. portalName .. " is disabled")
 			playerData.state = PLAYER_STATES.IN_DISABLED_PORTAL
 			return false
 		end
 
 		-- check if the portal is not set up
-		if targetPortalName == "" or targetPortalName == nil or targetPortalHasNoDest(DATA.portals[targetPortalName]) then
-			if targetPortalHasNoDest(DATA.portals[targetPortalName]) then
-				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortalName .. " does not have a destination point set")
-			else
-				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortalName .. "doesn't lead anywhere!")	
-			end
-			
-			playerData.state = PLAYER_STATES.PORTAL_NOT_SETUP
+		if #targetPortals == 0 then
+				Player:SendMessage(cChatColor.Red .. "Portal " .. portalName .. " doesn't lead anywhere!")
+				playerData.state = PLAYER_STATES.PORTAL_NOT_SETUP
+				return false
+		end
+
+		if #targetPortals == 1 and targetPortalHasNoDest(DATA.portals[targetPortals[1]]) then
+				Player:SendMessage(cChatColor.Red .. "Portal " .. targetPortals[1] .. " does not have a destination point set")
+				playerData.state = PLAYER_STATES.PORTAL_NOT_SETUP
+				return false
+		end
+
+		if #targetPortals > 1 then
+			Player:SendMessage(cChatColor.LightBlue .. "portal " .. portalName)
+			Player:SendMessage(cChatColor.LightBlue .. "Select a destination from: " .. arrayTableToString(targetPortals))
+			Player:SendMessage(cChatColor.LightBlue .. "use: '/pteleport <destination>'")
+			playerData.state = PLAYER_STATES.SELECTING_DEST
 			return false
 		end
 
 		-- check if player just entered
 		if (playerData.state == PLAYER_STATES.NOT_IN_PORTAL) then
-			Player:SendMessage(cChatColor.LightBlue .. "portal: " .. portalName .. ", Stand still for a few seconds for teleportation")
+			Player:SendMessage(cChatColor.LightBlue .. "portal: " .. portalName)
+			Player:SendMessage(cChatColor.LightBlue .. "Stand still for a few seconds for teleportation")
 			playerData.portal_timer = GetTime() + PORTAL_ACTIVATION_TIME
 			playerData.state = PLAYER_STATES.WAITING
-			playerData.targetPortalName = targetPortalName
+			playerData.targetPortalName = targetPortals[1]
 		end
 
 		if playerData.state == PLAYER_STATES.WAITING then
