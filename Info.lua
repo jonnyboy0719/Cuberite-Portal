@@ -1,7 +1,7 @@
 g_PluginInfo =
 {
 	Name = "Portal-v2",
-	Version = "3.0.0",
+	Version = "3.0.1",
 	Date = "2015-11-09",
 	SourceLocation = "https://github.com/jonnyboy0719/Cuberite-Portal/",
 	Description = [[Create portals to other places on the world, or to other worlds!]],

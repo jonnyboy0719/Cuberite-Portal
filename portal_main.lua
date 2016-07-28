@@ -98,8 +98,9 @@ function OnPlayerMoving(Player)
 		local targetPortals = portalData.target
 		-- check if we already set state to PORTAL_NOT_SETUP or IN_DISABLED_PORTAL
 		if (playerData.state == PLAYER_STATES.PORTAL_NOT_SETUP or
-			playerData.state == PLAYER_STATES.IN_DISABLED_PORTAL or 
-			DATA.all_portals_disabled or 
+			playerData.state == PLAYER_STATES.IN_DISABLED_PORTAL or
+			playerData.state == PLAYER_STATES.TELEPORTING or
+			DATA.all_portals_disabled or
 			playerData.state == PLAYER_STATES.SELECTING_DEST) then
 			return false
 		end
